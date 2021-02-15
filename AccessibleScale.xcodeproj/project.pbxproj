@@ -13,6 +13,8 @@
 		7EDFB96725D990AB008179BE /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7EDFB96625D990AB008179BE /* Preview Assets.xcassets */; };
 		7EDFB97225D990AB008179BE /* AccessibleScaleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EDFB97125D990AB008179BE /* AccessibleScaleTests.swift */; };
 		7EDFB97D25D990AB008179BE /* AccessibleScaleUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EDFB97C25D990AB008179BE /* AccessibleScaleUITests.swift */; };
+		7EDFB9B525DA125B008179BE /* ScaleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EDFB9B425DA125B008179BE /* ScaleView.swift */; };
+		7EDFB9BA25DA128A008179BE /* ModelData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EDFB9B925DA128A008179BE /* ModelData.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,6 +47,8 @@
 		7EDFB97825D990AB008179BE /* AccessibleScaleUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AccessibleScaleUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7EDFB97C25D990AB008179BE /* AccessibleScaleUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibleScaleUITests.swift; sourceTree = "<group>"; };
 		7EDFB97E25D990AB008179BE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		7EDFB9B425DA125B008179BE /* ScaleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleView.swift; sourceTree = "<group>"; };
+		7EDFB9B925DA128A008179BE /* ModelData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelData.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -97,9 +101,11 @@
 			children = (
 				7EDFB95F25D990A8008179BE /* AccessibleScaleApp.swift */,
 				7EDFB96125D990A8008179BE /* ContentView.swift */,
+				7EDFB9B425DA125B008179BE /* ScaleView.swift */,
 				7EDFB96325D990AB008179BE /* Assets.xcassets */,
 				7EDFB96825D990AB008179BE /* Info.plist */,
 				7EDFB96525D990AB008179BE /* Preview Content */,
+				7EDFB9B925DA128A008179BE /* ModelData.swift */,
 			);
 			path = AccessibleScale;
 			sourceTree = "<group>";
@@ -259,6 +265,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7EDFB9B525DA125B008179BE /* ScaleView.swift in Sources */,
+				7EDFB9BA25DA128A008179BE /* ModelData.swift in Sources */,
 				7EDFB96225D990A8008179BE /* ContentView.swift in Sources */,
 				7EDFB96025D990A8008179BE /* AccessibleScaleApp.swift in Sources */,
 			);
