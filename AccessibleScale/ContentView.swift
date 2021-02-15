@@ -7,22 +7,11 @@
 
 import SwiftUI
 
-extension View {
-    @ViewBuilder func isHidden(_ hidden: Bool, remove: Bool = false) -> some View {
-        if hidden {
-            if !remove {
-                self.hidden()
-            }
-        } else {
-            self
-        }
-    }
-}
 
 struct ContentView: View {
     @EnvironmentObject var modelData: ModelData
     @State private var measureFat = false
-    
+
     var body: some View {
         VStack (alignment: .trailing) {
             Toggle(isOn: $measureFat) {
@@ -30,7 +19,7 @@ struct ContentView: View {
             }
             .padding()
             .hidden()
-            
+
             HStack {
                 Text(String(format: "%05.2f", modelData.viewData.weight))
                     .font(.system(size: 60))
@@ -40,7 +29,7 @@ struct ContentView: View {
                     .fixedSize(horizontal: /*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/, vertical: false)
             }
             .accessibilityLabel(modelData.viewData.localizedWeightString())
-            
+
             HStack {
                 Text(String(format: "%04.1f", modelData.viewData.fat))
                     .font(.system(size: 60))

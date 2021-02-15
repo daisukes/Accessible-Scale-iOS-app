@@ -12,9 +12,9 @@ final class ModelData: ObservableObject {
 }
 
 enum Unit: String {
-    case KiloGram = "Kilo grams"
-    case Pound = "Pounds"
-    
+    case KiloGram = "kilo grams"
+    case Pound = "pounds"
+
     func label() -> String {
         switch(self) {
         case Unit.KiloGram:
@@ -29,7 +29,7 @@ struct ViewData {
     var weight: Float = 0
     var fat: Float = 0
     var unit: Unit = .KiloGram
-    
+
     func localizedWeightString() -> String {
         return String(format: "%.1f %@", weight, unit.rawValue)
     }
