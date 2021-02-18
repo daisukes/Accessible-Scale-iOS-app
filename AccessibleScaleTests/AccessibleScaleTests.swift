@@ -9,6 +9,7 @@ import XCTest
 @testable import AccessibleScale
 
 class AccessibleScaleTests: XCTestCase {
+    var modelData = ModelData()
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
@@ -19,6 +20,8 @@ class AccessibleScaleTests: XCTestCase {
     }
 
     func testExample() throws {
+        
+        
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct results.
     }

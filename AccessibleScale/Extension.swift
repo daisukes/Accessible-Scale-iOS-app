@@ -7,6 +7,8 @@
 
 import Foundation
 import SwiftUI
+import DarwinGATT
+import CoreBluetooth
 
 extension Data {
     struct HexEncodingOptions: OptionSet {
@@ -46,3 +48,4 @@ func dataWithHexString(hex: String, checksum: Bool = true) -> Data {
     }
     return data
 }
+	

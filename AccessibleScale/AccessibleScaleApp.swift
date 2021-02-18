@@ -6,19 +6,19 @@
 //
 
 import SwiftUI
-import UserNotifications
+import CoreBluetooth
 
 @main
 struct AccessibleScaleApp: App, ScaleDelegate {
     @Environment(\.scenePhase) var scenePhase
-    let modelData = ModelData()
 
-    var scale: Scale = RenphoScale()
+    let scale = Scale.shared
     var center = UNUserNotificationCenter.current()
+    var modelData: ModelData = ModelData()
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
                 .environmentObject(modelData)
         }.onChange(of: scenePhase) { newScenePhase in
             switch newScenePhase {
@@ -27,15 +27,8 @@ struct AccessibleScaleApp: App, ScaleDelegate {
             case .inactive:
                 break
             case .active:
-                let generalCategory = UNNotificationCategory(identifier: "GENERAL",
-                                                             actions: [],
-                                                             intentIdentifiers: [],
-                                                             options: [.allowAnnouncement])
-                center.setNotificationCategories([generalCategory])
-                center.requestAuthorization(options: [UNAuthorizationOptions.alert,
-                                                      UNAuthorizationOptions.sound]) { (granted, error) in
-                }
                 scale.delegate = self
+                self.initNotification()
                 break
             @unknown default:
                 break
@@ -43,19 +36,33 @@ struct AccessibleScaleApp: App, ScaleDelegate {
         }
     }
 
+    func initNotification() {
+        let generalCategory = UNNotificationCategory(identifier: "GENERAL",
+                                                     actions: [],
+                                                     intentIdentifiers: [],
+                                                     options: [.allowAnnouncement])
+        center.setNotificationCategories([generalCategory])
+    }
+
     // MARK: ScaleDelegate
 
-    func updated(state: Scale.State) {
-        if UIApplication.shared.applicationState != .background {
-            return
-        }
+    func updated(bluetoothState: CBManagerState) {
+        modelData.bluetoothState = bluetoothState
+    }
 
+    func updated(state: Scale.State) {
         switch(state) {
+        case .UserRegistered:
+            modelData.userRegistered = true
+            break
         case .Connected:
             DispatchQueue.main.async {
+                if UIApplication.shared.applicationState != .background {
+                    UIAccessibility.post(notification: .announcement, argument: "Please step on the scale")
+                    return
+                }
                 let content = UNMutableNotificationContent()
-                content.title = NSString.localizedUserNotificationString(forKey: "Scale Connected", arguments: nil)
-                content.body = NSString.localizedUserNotificationString(forKey: "You can step on the scale now", arguments: nil)
+                content.title = "Please step on the scale"
                 content.sound = UNNotificationSound.default
 
                 let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false)
@@ -67,17 +74,24 @@ struct AccessibleScaleApp: App, ScaleDelegate {
                     }
                 }
             }
+            modelData.connected = true
+            modelData.weight = 0
+            modelData.fat = 0
             break
         case .NotConnected:
+            modelData.connected = false
             break
         case .WeightMeasured:
-            if modelData.viewData.weight == 0 {
+            if modelData.weight == 0 {
                 break
             }
             DispatchQueue.main.async {
+                if UIApplication.shared.applicationState != .background {
+                    UIAccessibility.post(notification: .announcement, argument: modelData.localizedWeightString())
+                    return
+                }
                 let content = UNMutableNotificationContent()
-                content.title = NSString.localizedUserNotificationString(forKey: "Measure Completed", arguments: nil)
-                content.body = NSString.localizedUserNotificationString(forKey: "Your weight is \(modelData.viewData.localizedWeightString())", arguments: nil)
+                content.title = modelData.localizedWeightString()
                 content.sound = UNNotificationSound.default
 
                 let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false)
@@ -91,19 +105,37 @@ struct AccessibleScaleApp: App, ScaleDelegate {
             }
             break
         case .CompositeMeasured:
+            DispatchQueue.main.async {
+                if UIApplication.shared.applicationState != .background {
+                    UIAccessibility.post(notification: .announcement, argument: modelData.localizedFatString())
+                    return
+                }
+                let content = UNMutableNotificationContent()
+                content.title = "\(modelData.localizedFatString())"
+                content.sound = UNNotificationSound.default
+
+                let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false)
+                let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+
+                UNUserNotificationCenter.current().add(request) { (error: Error?) in
+                    if let theError = error {
+                        print(theError.localizedDescription)
+                    }
+                }
+            }
             break
         case .Idle:
             break
         }
     }
 
-    func updated(weight: Float32, unit: Unit) {
-        modelData.viewData.weight = weight
-        modelData.viewData.unit = unit
-        _ = modelData.$viewData.share()
+    func updated(weight: GATTWeightMeasurement) {
+        let massFactor = (modelData.unit == .Kilogram) ? 1 : Float(0.453592)
+        modelData.weight = weight.weight / massFactor
     }
 
-    func updated(fat: Float32) {
+    func updated(bodyComposition: GATTBodyCompositionMeasurement) {
+        modelData.fat = bodyComposition.fatPercentage
     }
 
 }

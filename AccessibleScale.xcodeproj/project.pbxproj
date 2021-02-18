@@ -7,6 +7,24 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3023526D25E0B3650002A683 /* GATTCustom.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3023526C25E0B3650002A683 /* GATTCustom.swift */; };
+		304C55E025DC695A00C765D8 /* AccessibleScale.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 304C55DE25DC695A00C765D8 /* AccessibleScale.xcdatamodeld */; };
+		304C562425DC776800C765D8 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304C562325DC776800C765D8 /* Persistence.swift */; };
+		304C563925DCC3E800C765D8 /* UserDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304C563825DCC3E800C765D8 /* UserDetail.swift */; };
+		304C563E25DCD8D600C765D8 /* BodyMeasurementRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304C563D25DCD8D600C765D8 /* BodyMeasurementRow.swift */; };
+		304C564325DCE5DB00C765D8 /* DataHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304C564225DCE5DB00C765D8 /* DataHelper.swift */; };
+		304C564825DCF09300C765D8 /* MeasurementDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304C564725DCF09300C765D8 /* MeasurementDetail.swift */; };
+		304C565625DD63EF00C765D8 /* OnboardView1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304C565525DD63EF00C765D8 /* OnboardView1.swift */; };
+		304C565B25DD6BAA00C765D8 /* OnboardView2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304C565A25DD6BAA00C765D8 /* OnboardView2.swift */; };
+		304C566025DD740D00C765D8 /* OnboardView3.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304C565F25DD740D00C765D8 /* OnboardView3.swift */; };
+		304C566525DD74F900C765D8 /* OnboardView4.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304C566425DD74F900C765D8 /* OnboardView4.swift */; };
+		304C566A25DD75F300C765D8 /* OnboardView5.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304C566925DD75F300C765D8 /* OnboardView5.swift */; };
+		304C566F25DD7FC600C765D8 /* OnboardView6.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304C566E25DD7FC600C765D8 /* OnboardView6.swift */; };
+		304C569025DDB0FC00C765D8 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304C568F25DDB0FC00C765D8 /* RootView.swift */; };
+		307F7C0025E02273008A6458 /* GATTBodyCompositionMeasurement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 307F7BFF25E02273008A6458 /* GATTBodyCompositionMeasurement.swift */; };
+		307F7C0525E023D7008A6458 /* GATTWeightMeasurement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 307F7C0425E023D7008A6458 /* GATTWeightMeasurement.swift */; };
+		307F7C0A25E02405008A6458 /* GATTUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 307F7C0925E02405008A6458 /* GATTUtil.swift */; };
+		307F7C1825E03DA2008A6458 /* GATTUserData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 307F7C1725E03DA2008A6458 /* GATTUserData.swift */; };
 		7EDFB96025D990A8008179BE /* AccessibleScaleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EDFB95F25D990A8008179BE /* AccessibleScaleApp.swift */; };
 		7EDFB96225D990A8008179BE /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EDFB96125D990A8008179BE /* ContentView.swift */; };
 		7EDFB96425D990AB008179BE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7EDFB96325D990AB008179BE /* Assets.xcassets */; };
@@ -15,7 +33,6 @@
 		7EDFB97D25D990AB008179BE /* AccessibleScaleUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EDFB97C25D990AB008179BE /* AccessibleScaleUITests.swift */; };
 		7EDFB9B525DA125B008179BE /* ScaleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EDFB9B425DA125B008179BE /* ScaleView.swift */; };
 		7EDFB9BA25DA128A008179BE /* ModelData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EDFB9B925DA128A008179BE /* ModelData.swift */; };
-		7EDFB9C225DA1B22008179BE /* RenphoScale.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EDFB9C125DA1B22008179BE /* RenphoScale.swift */; };
 		7EDFB9C825DA1B48008179BE /* Scale.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EDFB9C725DA1B47008179BE /* Scale.swift */; };
 		7EDFB9CD25DA1B77008179BE /* Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EDFB9CC25DA1B77008179BE /* Extension.swift */; };
 /* End PBXBuildFile section */
@@ -38,6 +55,24 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		3023526C25E0B3650002A683 /* GATTCustom.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GATTCustom.swift; sourceTree = "<group>"; };
+		304C55DF25DC695A00C765D8 /* Scale.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Scale.xcdatamodel; sourceTree = "<group>"; };
+		304C562325DC776800C765D8 /* Persistence.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
+		304C563825DCC3E800C765D8 /* UserDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDetail.swift; sourceTree = "<group>"; };
+		304C563D25DCD8D600C765D8 /* BodyMeasurementRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyMeasurementRow.swift; sourceTree = "<group>"; };
+		304C564225DCE5DB00C765D8 /* DataHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataHelper.swift; sourceTree = "<group>"; };
+		304C564725DCF09300C765D8 /* MeasurementDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementDetail.swift; sourceTree = "<group>"; };
+		304C565525DD63EF00C765D8 /* OnboardView1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardView1.swift; sourceTree = "<group>"; };
+		304C565A25DD6BAA00C765D8 /* OnboardView2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardView2.swift; sourceTree = "<group>"; };
+		304C565F25DD740D00C765D8 /* OnboardView3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardView3.swift; sourceTree = "<group>"; };
+		304C566425DD74F900C765D8 /* OnboardView4.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardView4.swift; sourceTree = "<group>"; };
+		304C566925DD75F300C765D8 /* OnboardView5.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardView5.swift; sourceTree = "<group>"; };
+		304C566E25DD7FC600C765D8 /* OnboardView6.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardView6.swift; sourceTree = "<group>"; };
+		304C568F25DDB0FC00C765D8 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		307F7BFF25E02273008A6458 /* GATTBodyCompositionMeasurement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GATTBodyCompositionMeasurement.swift; sourceTree = "<group>"; };
+		307F7C0425E023D7008A6458 /* GATTWeightMeasurement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GATTWeightMeasurement.swift; sourceTree = "<group>"; };
+		307F7C0925E02405008A6458 /* GATTUtil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GATTUtil.swift; sourceTree = "<group>"; };
+		307F7C1725E03DA2008A6458 /* GATTUserData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GATTUserData.swift; sourceTree = "<group>"; };
 		7EDFB95C25D990A8008179BE /* AccessibleScale.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AccessibleScale.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7EDFB95F25D990A8008179BE /* AccessibleScaleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibleScaleApp.swift; sourceTree = "<group>"; };
 		7EDFB96125D990A8008179BE /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -52,7 +87,6 @@
 		7EDFB97E25D990AB008179BE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7EDFB9B425DA125B008179BE /* ScaleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleView.swift; sourceTree = "<group>"; };
 		7EDFB9B925DA128A008179BE /* ModelData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelData.swift; sourceTree = "<group>"; };
-		7EDFB9C125DA1B22008179BE /* RenphoScale.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RenphoScale.swift; sourceTree = "<group>"; };
 		7EDFB9C725DA1B47008179BE /* Scale.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Scale.swift; sourceTree = "<group>"; };
 		7EDFB9CC25DA1B77008179BE /* Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extension.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -82,6 +116,47 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		304C55D525DC556400C765D8 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				7EDFB9B925DA128A008179BE /* ModelData.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		304C55D625DC558200C765D8 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				304C568F25DDB0FC00C765D8 /* RootView.swift */,
+				7EDFB96125D990A8008179BE /* ContentView.swift */,
+				7EDFB9B425DA125B008179BE /* ScaleView.swift */,
+				304C563825DCC3E800C765D8 /* UserDetail.swift */,
+				304C563D25DCD8D600C765D8 /* BodyMeasurementRow.swift */,
+				304C564725DCF09300C765D8 /* MeasurementDetail.swift */,
+				304C565525DD63EF00C765D8 /* OnboardView1.swift */,
+				304C565A25DD6BAA00C765D8 /* OnboardView2.swift */,
+				304C565F25DD740D00C765D8 /* OnboardView3.swift */,
+				304C566425DD74F900C765D8 /* OnboardView4.swift */,
+				304C566925DD75F300C765D8 /* OnboardView5.swift */,
+				304C566E25DD7FC600C765D8 /* OnboardView6.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		304C55DA25DC558E00C765D8 /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				7EDFB9C725DA1B47008179BE /* Scale.swift */,
+				304C564225DCE5DB00C765D8 /* DataHelper.swift */,
+				307F7C0925E02405008A6458 /* GATTUtil.swift */,
+				307F7C1725E03DA2008A6458 /* GATTUserData.swift */,
+				3023526C25E0B3650002A683 /* GATTCustom.swift */,
+				307F7BFF25E02273008A6458 /* GATTBodyCompositionMeasurement.swift */,
+				307F7C0425E023D7008A6458 /* GATTWeightMeasurement.swift */,
+			);
+			path = Helpers;
+			sourceTree = "<group>";
+		};
 		7EDFB95325D990A8008179BE = {
 			isa = PBXGroup;
 			children = (
@@ -106,13 +181,13 @@
 			isa = PBXGroup;
 			children = (
 				7EDFB95F25D990A8008179BE /* AccessibleScaleApp.swift */,
-				7EDFB96125D990A8008179BE /* ContentView.swift */,
-				7EDFB9B425DA125B008179BE /* ScaleView.swift */,
-				7EDFB9C725DA1B47008179BE /* Scale.swift */,
-				7EDFB9C125DA1B22008179BE /* RenphoScale.swift */,
-				7EDFB9B925DA128A008179BE /* ModelData.swift */,
+				304C562325DC776800C765D8 /* Persistence.swift */,
+				304C55D625DC558200C765D8 /* Views */,
+				304C55DA25DC558E00C765D8 /* Helpers */,
+				304C55D525DC556400C765D8 /* Models */,
 				7EDFB9CC25DA1B77008179BE /* Extension.swift */,
 				7EDFB96325D990AB008179BE /* Assets.xcassets */,
+				304C55DE25DC695A00C765D8 /* AccessibleScale.xcdatamodeld */,
 				7EDFB96825D990AB008179BE /* Info.plist */,
 				7EDFB96525D990AB008179BE /* Preview Content */,
 			);
@@ -161,6 +236,8 @@
 			dependencies = (
 			);
 			name = AccessibleScale;
+			packageProductDependencies = (
+			);
 			productName = AccessibleScale;
 			productReference = 7EDFB95C25D990A8008179BE /* AccessibleScale.app */;
 			productType = "com.apple.product-type.application";
@@ -232,6 +309,8 @@
 				Base,
 			);
 			mainGroup = 7EDFB95325D990A8008179BE;
+			packageReferences = (
+			);
 			productRefGroup = 7EDFB95D25D990A8008179BE /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -274,13 +353,30 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				304C566025DD740D00C765D8 /* OnboardView3.swift in Sources */,
+				307F7C0A25E02405008A6458 /* GATTUtil.swift in Sources */,
+				304C566F25DD7FC600C765D8 /* OnboardView6.swift in Sources */,
+				304C565625DD63EF00C765D8 /* OnboardView1.swift in Sources */,
+				304C566525DD74F900C765D8 /* OnboardView4.swift in Sources */,
+				307F7C0025E02273008A6458 /* GATTBodyCompositionMeasurement.swift in Sources */,
+				304C569025DDB0FC00C765D8 /* RootView.swift in Sources */,
+				304C562425DC776800C765D8 /* Persistence.swift in Sources */,
 				7EDFB9B525DA125B008179BE /* ScaleView.swift in Sources */,
+				304C565B25DD6BAA00C765D8 /* OnboardView2.swift in Sources */,
+				307F7C1825E03DA2008A6458 /* GATTUserData.swift in Sources */,
 				7EDFB9BA25DA128A008179BE /* ModelData.swift in Sources */,
+				304C564325DCE5DB00C765D8 /* DataHelper.swift in Sources */,
+				304C563925DCC3E800C765D8 /* UserDetail.swift in Sources */,
+				304C55E025DC695A00C765D8 /* AccessibleScale.xcdatamodeld in Sources */,
 				7EDFB9CD25DA1B77008179BE /* Extension.swift in Sources */,
+				304C563E25DCD8D600C765D8 /* BodyMeasurementRow.swift in Sources */,
+				304C564825DCF09300C765D8 /* MeasurementDetail.swift in Sources */,
+				307F7C0525E023D7008A6458 /* GATTWeightMeasurement.swift in Sources */,
 				7EDFB96225D990A8008179BE /* ContentView.swift in Sources */,
+				304C566A25DD75F300C765D8 /* OnboardView5.swift in Sources */,
 				7EDFB96025D990A8008179BE /* AccessibleScaleApp.swift in Sources */,
+				3023526D25E0B3650002A683 /* GATTCustom.swift in Sources */,
 				7EDFB9C825DA1B48008179BE /* Scale.swift in Sources */,
-				7EDFB9C225DA1B22008179BE /* RenphoScale.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -439,6 +535,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"AccessibleScale/Preview Content\"";
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = AccessibleScale/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
@@ -446,7 +543,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.github.daisukes.AccessibleScale;
+				PRODUCT_BUNDLE_IDENTIFIER = edu.cmu.cal.AccessibleScale;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -460,6 +557,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"AccessibleScale/Preview Content\"";
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = AccessibleScale/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
@@ -467,7 +565,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.github.daisukes.AccessibleScale;
+				PRODUCT_BUNDLE_IDENTIFIER = edu.cmu.cal.AccessibleScale;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -594,6 +692,19 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		304C55DE25DC695A00C765D8 /* AccessibleScale.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				304C55DF25DC695A00C765D8 /* Scale.xcdatamodel */,
+			);
+			currentVersion = 304C55DF25DC695A00C765D8 /* Scale.xcdatamodel */;
+			path = AccessibleScale.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = 7EDFB95425D990A8008179BE /* Project object */;
 }
