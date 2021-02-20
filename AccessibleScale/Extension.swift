@@ -7,7 +7,6 @@
 
 import Foundation
 import SwiftUI
-import DarwinGATT
 import CoreBluetooth
 
 extension Data {
