@@ -15,18 +15,16 @@ There are **Talking Scales** for visually impaired people, but there is no **Sma
 
 # Supported / Not Supported Smart Scales
 
-- Renpho Smart Scale, Model ES-WBE28 (weight only)
+- Renpho Smart Scale, Model ES-WBE28 (weight and body composition)
  - Procedure
-   - Setup with Renpho app (including WiFi)
+   - Complete welcome page to input information
  - Launch app mode
    - Turn on the app by push the scale and wait the app gets ready
-   - Get on the scale, the app reads the weight
+   - Get on the scale, the app reads the weight and fat percentage
  - Background connection mode
    - Turn on the app by push the scale and wait to hear notification
-   - Get on the scale, you hear the second notification
- - ToDo
-   - user management (it depends on the Renpho's app and packet sniffing to see random generated passcode to access saved user data and initiate measurement)
-   - parse body composite measurement
+   - Get on the scale, you hear the second notification for weight
+   - Get on the scale, you hear the third notification for fat
 
 - Wyze Scale (not supported, custom service is not easy to reverse engineered)
 
