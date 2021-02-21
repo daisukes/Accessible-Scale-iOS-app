@@ -13,7 +13,7 @@ struct GATTBodyCompositionMeasurement {
     let fatPercentage: Double
     let timestamp: Date?
     let userID: UInt8?
-    let baselMetabolism: UInt16?
+    let basalMetabolism: UInt16?
     let musclePercentage: Double?
     let muscleMass: Double?
     let fatFreeMass: Double?
@@ -27,7 +27,7 @@ struct GATTBodyCompositionMeasurement {
     let measurementUnitBit = 1
     let timestampBit = 2
     let userIDBit = 3
-    let baselMetabolismBit = 4
+    let basalMetabolismBit = 4
     let musclePercentageBit = 5
     let muscleMassBit = 6
     let fatFreeMassBit = 7
@@ -37,7 +37,6 @@ struct GATTBodyCompositionMeasurement {
     let weightBit = 11
     let heightBit = 12
     let multiplePacketBit = 13
-
 
     init(data: Data) {
         var index = 0
@@ -54,7 +53,7 @@ struct GATTBodyCompositionMeasurement {
 
         timestamp =        (GATTUtil.flag(flag, timestampBit) && index + 7 < length) ?        GATTDate(data: data, start: &index).date : nil
         userID =           (GATTUtil.flag(flag, userIDBit) && index + 1 < length) ?           GATTUtil.uint8(data, &index) : nil
-        baselMetabolism =  (GATTUtil.flag(flag, baselMetabolismBit) && index + 2 < length) ?  GATTUtil.uint16(data, &index) : nil
+        basalMetabolism =  (GATTUtil.flag(flag, basalMetabolismBit) && index + 2 < length) ?  GATTUtil.uint16(data, &index) : nil
         musclePercentage = (GATTUtil.flag(flag, musclePercentageBit) && index + 2 < length) ? Double(GATTUtil.uint16(data, &index)) * percentFactor : nil
         muscleMass =       (GATTUtil.flag(flag, muscleMassBit) && index + 2 < length) ?       Double(GATTUtil.uint16(data, &index)) * massFactor : nil
         fatFreeMass =      (GATTUtil.flag(flag, fatFreeMassBit) && index + 2 < length) ?      Double(GATTUtil.uint16(data, &index)) * massFactor : nil

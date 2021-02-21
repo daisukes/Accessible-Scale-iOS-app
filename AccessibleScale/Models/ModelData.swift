@@ -12,6 +12,20 @@ import CoreBluetooth
 import UserNotifications
 import Combine
 
+struct Measurement {
+    var measurementUnit: ScaleUnit?
+    var weight: Double?
+    var fatPercentage: Double?
+    var bodyMassIndex: Double?
+    var basalMetabolism: Int?
+    var musclePercentage: Double?
+    var muscleMass: Double?
+    var fatFreeMass: Double?
+    var softLeanMass: Double?
+    var bodyWaterMass: Double?
+    var impedance: Int?
+}
+
 final class ModelData: ObservableObject {
     @Published var bluetoothState: CBManagerState = .unknown
     @Published var notificationState: GrantState = .Init
@@ -19,58 +33,19 @@ final class ModelData: ObservableObject {
 
     @Published var connected: Bool = false
     @Published var userRegistered: Bool = false
-    @Published var weight: Double = 0
-    @Published var fat: Double = 0
-    @Published var unit: ScaleUnit = .Kilogram
-    @Published var displayedScene: DisplayedScene = .Onboard
 
-    @Published var date_of_birth: Date = SimpleDate.date19700101
+    @Published var unit: ScaleUnit = .Kilogram
     @Published var height: Int = 165
+    @Published var date_of_birth: Date = SimpleDate.date19700101
     @Published var gender: Gender = Gender.Female
 
+    @Published var measurement = Measurement()
+
+    @Published var displayedScene: DisplayedScene = .Onboard
+
+    // Core Data
+    var bodyMeasurementData: BodyMeasurement?
     var lastWeightNotify: TimeInterval = 0
-
-    private var cancellableSet: Set<AnyCancellable> = []
-
-    // ToDo: can be cleaner
-    private var heightUnitChanged: AnyPublisher<Int, Never> {
-        $unit
-            .map { input in
-                let unit = self.unit
-                let height = self.height
-
-                if input == .Pound && unit == .Kilogram {
-                    print(Int(round(Double(height) / 2.54)))
-                    return Int(round(Double(height) / 2.54))
-                }
-                if input == .Kilogram && unit == .Pound {
-                    print(Int(round(Double(height) * 2.54)))
-                    return Int(round(Double(height) * 2.54))
-                }
-                return height
-            }
-            .eraseToAnyPublisher()
-    }
-    private var weightUnitChanged: AnyPublisher<Double, Never> {
-        $unit
-            .map { input in
-                let unit = self.unit
-                let weight = self.weight
-
-                if input == .Pound && unit == .Kilogram {
-                    print(round(weight / 0.453592))
-                    return round(weight / 0.453592)
-                }
-                if input == .Kilogram && unit == .Pound {
-                    print(round(weight * 0.453592))
-                    return round(weight * 0.453592)
-                }
-                return weight
-            }
-            .eraseToAnyPublisher()
-    }
-
-
 
     var viewContext: NSManagedObjectContext!
     lazy var userHelper: UserHelper? = UserHelper(context: viewContext)
@@ -88,61 +63,37 @@ final class ModelData: ObservableObject {
             date_of_birth = user.date_of_birth!
             gender = Gender(rawValue: user.gender!)!
         }
-
-        heightUnitChanged
-            .receive(on: RunLoop.main)
-            .assign(to: \.height, on: self)
-            .store(in: &cancellableSet)
-        weightUnitChanged
-            .receive(on: RunLoop.main)
-            .assign(to: \.weight, on: self)
-            .store(in: &cancellableSet)
     }
 
     func localizedWeightString() -> String {
+        let weight = measurement.weight ?? 0
         return String(format: "%.1f %@", weight, unit.rawValue)
     }
 
     func localizedFatString() -> String {
-        return String(format: "%.1f %%", fat)
+        let fatPercentage = measurement.fatPercentage ?? 0
+        return String(format: "%.1f %%", fatPercentage)
     }
 
     func localizedWeightFatString() -> String {
         return String(format: "%@, %@", localizedWeightString(), localizedFatString())
     }
 
-    func save() {
-        let users = self.users()
-        let user = users[0]
-        var changed = false
-        if user.unit != unit.rawValue {
-            user.unit = unit.rawValue
-            changed = true
-        }
-        if user.height != height {
-            user.height = Int16(height)
-            changed = true
-        }
-        if user.date_of_birth != date_of_birth {
-            user.date_of_birth = date_of_birth
-            changed = true
-        }
-        if user.gender != gender.rawValue {
-            user.gender = gender.rawValue
-            changed = true
-        }
-        if changed {
-            user.written = false
-            do {
-                print("saving change")
-                try viewContext.save()
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nsError = error as NSError
-                print("Unresolved error \(nsError), \(nsError.userInfo)")
+    func prepareBodyMeasurement() -> BodyMeasurement? {
+        let now = Date()
+        if let bodyMeasurement = self.bodyMeasurementData {
+            if let timestamp = bodyMeasurement.timestamp {
+                if now.timeIntervalSince(timestamp) > 10 {
+                    self.bodyMeasurementData = nil
+                }
             }
         }
+
+        if self.bodyMeasurementData == nil {
+            bodyMeasurementData = BodyMeasurement(context: self.viewContext)
+            bodyMeasurementData!.timestamp = now
+        }
+        return bodyMeasurementData
     }
 
     // MARK: User related functions
@@ -190,6 +141,41 @@ final class ModelData: ObservableObject {
         }
         return nil
     }
+
+    func saveUser() {
+        let users = self.users()
+        let user = users[0]
+        var changed = false
+        if user.unit != unit.rawValue {
+            user.unit = unit.rawValue
+            changed = true
+        }
+        if user.height != height {
+            user.height = Int16(height)
+            changed = true
+        }
+        if user.date_of_birth != date_of_birth {
+            user.date_of_birth = date_of_birth
+            changed = true
+        }
+        if user.gender != gender.rawValue {
+            user.gender = gender.rawValue
+            changed = true
+        }
+        if changed {
+            user.written = false
+            do {
+                print("saving change")
+                try viewContext.save()
+            } catch {
+                // Replace this implementation with code to handle the error appropriately.
+                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
+                let nsError = error as NSError
+                print("Unresolved error \(nsError), \(nsError.userInfo)")
+            }
+        }
+    }
+
 }
 
 // MARK: Enums and Utilities
@@ -257,4 +243,16 @@ class SimpleDate: DateFormatter {
     }
 
     static let date19700101: Date = SimpleDate().date(from: "1970-01-01")!
+}
+
+
+class SimpleDateTime: DateFormatter {
+    override init() {
+        super.init()
+        self.dateFormat = "yyyy-MM-dd HH:mm:ss"
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
 }

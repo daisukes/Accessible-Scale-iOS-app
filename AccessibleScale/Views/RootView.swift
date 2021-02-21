@@ -27,8 +27,13 @@ struct RootView: View {
 
 struct RootView_Previews: PreviewProvider {
     static var previews: some View {
-        RootView()
-            .environment(\.managedObjectContext, PersistenceController.empty.container.viewContext)
-            .environmentObject(ModelData(viewContext:  PersistenceController.empty.container.viewContext))
+        //RootView()
+        //    .environmentObject(ModelData(viewContext:  PersistenceController.empty.container.viewContext))
+
+        let modelData = ModelData(viewContext:  PersistenceController.preview.container.viewContext)
+        modelData.displayedScene = .Scale
+
+        return RootView()
+            .environmentObject(modelData)
     }
 }

@@ -50,7 +50,7 @@ struct UserDetail: View {
         .padding()
         .navigationTitle("User")
         .onDisappear() {
-            modelData.save()
+            modelData.saveUser()
         }
     }
 }
@@ -58,8 +58,7 @@ struct UserDetail: View {
 struct UserDetail_Previews: PreviewProvider {
     static var previews: some View {
         let modelData = ModelData(viewContext: PersistenceController.preview.container.viewContext)
-        modelData.weight = 54.25
-        modelData.fat = 19.2
+        modelData.measurement = Measurement(weight: 56.78, fatPercentage: 19.80)
 
         return UserDetail()
             .environmentObject(modelData)

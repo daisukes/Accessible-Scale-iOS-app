@@ -20,6 +20,9 @@ struct GATTWeightMeasurement {
     let userIDBit = 3
     let bmiBit = 4
 
+}
+
+extension GATTWeightMeasurement {
     init(data: Data) {
         var index = 0
         let flag = GATTUtil.uint8(data, &index)

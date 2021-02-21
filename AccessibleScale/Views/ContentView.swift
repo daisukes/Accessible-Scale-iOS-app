@@ -22,7 +22,7 @@ struct ContentView: View {
             
             HStack {
                 Spacer().frame(width: 50.0)
-                Text(String(format: "%05.2f", modelData.weight))
+                Text(String(format: "%05.2f", modelData.measurement.weight ?? 0))
                     .font(.system(size: 60))
                 Text(modelData.unit.label())
                     .font(.largeTitle)
@@ -34,7 +34,7 @@ struct ContentView: View {
             
             HStack {
                 Spacer().frame(width: 50.0)
-                Text(String(format: "%05.2f", modelData.fat))
+                Text(String(format: "%05.2f", modelData.measurement.fatPercentage ?? 0))
                     .font(.system(size: 60))
                 Text("%")
                     .font(.largeTitle)
@@ -48,10 +48,10 @@ struct ContentView: View {
                 .frame(maxWidth: .infinity, alignment: .topLeading)
                 .padding()
                 .font(.headline)
-            
+
             if let measurements = users[0].measurements?.allObjects as? [BodyMeasurement] {
                 List (measurements.sorted { $0.timestamp! > $1.timestamp! }) { measurement in
-                    NavigationLink (destination: MeasurementDetail()) {
+                    NavigationLink (destination: MeasurementDetail(measurement: measurement)) {
                         BodyMeasurementRow(measurement: measurement)
                     }
                 }
@@ -84,12 +84,23 @@ struct ContentView: View {
 struct ContentView_Previews: PreviewProvider {
     
     static var previews: some View {
-        let modelData = ModelData()
-        modelData.weight = 54.25
-        modelData.fat = 19.2
+        preview1
+        preview2
+    }
+
+    static var preview1: some View {
+        let modelData = ModelData(viewContext: PersistenceController.preview.container.viewContext)
+        modelData.measurement = Measurement(measurementUnit: .Kilogram, weight: 54.25, fatPercentage: 19.9)
+
+        return ContentView()
+            .environmentObject(modelData)
+    }
+
+    static var preview2: some View {
+        let modelData2 = ModelData(viewContext: PersistenceController.preview.container.viewContext)
+        modelData2.measurement = Measurement()
         
         return ContentView()
-            .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
-            .environmentObject(modelData)
+            .environmentObject(modelData2)
     }
 }

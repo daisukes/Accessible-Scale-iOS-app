@@ -59,8 +59,7 @@ struct AccessibleScaleApp: App, ScaleDelegate {
         case .Connected:
             notifyConnected()
             modelData.connected = true
-            modelData.weight = 0
-            modelData.fat = 0
+            modelData.measurement = Measurement()
             modelData.lastWeightNotify = 0
             break
         case .NotConnected:
@@ -68,10 +67,12 @@ struct AccessibleScaleApp: App, ScaleDelegate {
             break
         case .WeightMeasured:
             notifyMeasurement(state: state)
+            updateCoreData(state: state)
             updateHealthKit(state: state)
             break
         case .CompositeMeasured:
             notifyMeasurement(state: state)
+            updateCoreData(state: state)
             updateHealthKit(state: state)
             break
         case .Idle:
@@ -79,7 +80,19 @@ struct AccessibleScaleApp: App, ScaleDelegate {
         }
     }
 
-    func notifyConnected() {
+    func updated(weight: GATTWeightMeasurement) {
+        modelData.measurement.measurementUnit = weight.measurementUnit
+        modelData.measurement.weight = weight.weight
+    }
+
+    func updated(bodyComposition: GATTBodyCompositionMeasurement) {
+        modelData.measurement.fatPercentage = bodyComposition.fatPercentage
+    }
+
+    // MARK: private functions
+    // MARK: Notification
+
+    private func notifyConnected() {
         DispatchQueue.main.async {
             if UIApplication.shared.applicationState != .background {
                 UIAccessibility.post(notification: .announcement, argument: "Please step on the scale")
@@ -100,7 +113,7 @@ struct AccessibleScaleApp: App, ScaleDelegate {
         }
     }
 
-    func notify(_ message:String, sound: UNNotificationSound) {
+    private func notify(_ message:String, sound: UNNotificationSound) {
         DispatchQueue.main.async {
             if UIApplication.shared.applicationState != .background {
                 UIAccessibility.post(notification: .announcement, argument: message)
@@ -121,11 +134,11 @@ struct AccessibleScaleApp: App, ScaleDelegate {
         }
     }
 
-    func notifyMeasurement(state: Scale.State) {
+    private func notifyMeasurement(state: Scale.State) {
 
         // Weight is measured first
-        if state == .WeightMeasured && modelData.weight > 0 {
-            if modelData.fat == 0 {
+        if state == .WeightMeasured && modelData.measurement.weight != nil {
+            if modelData.measurement.fatPercentage == nil {
                 // measured before fat
                 let message = modelData.localizedWeightString()
                 let sound = UNNotificationSound.default
@@ -141,7 +154,7 @@ struct AccessibleScaleApp: App, ScaleDelegate {
         }
 
         if state == .CompositeMeasured {
-            if modelData.fat > 0 {
+            if modelData.measurement.fatPercentage != nil {
                 // Non Error
                 if modelData.lastWeightNotify > 0 {
                     // measured after weight
@@ -161,10 +174,28 @@ struct AccessibleScaleApp: App, ScaleDelegate {
         }
     }
 
-    let bodyMassType = HKObjectType.quantityType(forIdentifier: .bodyMass)!
-    let fatPercentageType = HKObjectType.quantityType(forIdentifier: .bodyFatPercentage)!
+    // MARK: Core Data
 
-    func updateHealthKit(state: Scale.State) {
+    private func updateCoreData(state: Scale.State) {
+        guard let bodyMeasuremnt = modelData.prepareBodyMeasurement() else { return }
+
+        if state == .WeightMeasured {
+            bodyMeasuremnt.weight = modelData.measurement.weight!
+        }
+
+        if state == .CompositeMeasured {
+
+        }
+    }
+
+
+
+    // MARK: Apple Healthkit
+
+    private let bodyMassType = HKObjectType.quantityType(forIdentifier: .bodyMass)!
+    private let fatPercentageType = HKObjectType.quantityType(forIdentifier: .bodyFatPercentage)!
+
+    private func updateHealthKit(state: Scale.State) {
         if HKHealthStore.isHealthDataAvailable() {
             // Add code to use HealthKit here.
             let healthStore = HKHealthStore()
@@ -174,7 +205,7 @@ struct AccessibleScaleApp: App, ScaleDelegate {
                 let status = healthStore.authorizationStatus(for: bodyMassType)
                 if status == .sharingAuthorized {
                     let unit: HKUnit = (modelData.unit == .Kilogram) ? .gram() : .pound()
-                    let value = modelData.weight * ((modelData.unit == .Kilogram) ? 1000 : 1)
+                    let value = modelData.measurement.weight! * ((modelData.unit == .Kilogram) ? 1000 : 1)
                     let weight = HKQuantity(unit: unit, doubleValue: Double(value))
                     let sample = HKQuantitySample(type: bodyMassType, quantity: weight, start: now, end: now)
                     healthStore.save(sample) { (success, error) in
@@ -186,7 +217,7 @@ struct AccessibleScaleApp: App, ScaleDelegate {
                 let status = healthStore.authorizationStatus(for: fatPercentageType)
                 if status == .sharingAuthorized {
                     let unit: HKUnit = .percent()
-                    let value = modelData.fat / 100
+                    let value = modelData.measurement.fatPercentage! / 100
                     let weight = HKQuantity(unit: unit, doubleValue: Double(value))
                     let sample = HKQuantitySample(type: fatPercentageType, quantity: weight, start: now, end: now)
                     healthStore.save(sample) { (success, error) in
@@ -196,13 +227,5 @@ struct AccessibleScaleApp: App, ScaleDelegate {
         }
     }
 
-    func updated(weight: GATTWeightMeasurement) {
-        let massFactor = (modelData.unit == .Kilogram) ? 1 : 0.453592
-        modelData.weight = weight.weight / massFactor
-    }
-
-    func updated(bodyComposition: GATTBodyCompositionMeasurement) {
-        modelData.fat = bodyComposition.fatPercentage
-    }
 
 }
