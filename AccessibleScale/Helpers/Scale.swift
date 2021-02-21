@@ -62,7 +62,8 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     var lastIndex: Int = 0
     var weight: Float = 0
     var unit: ScaleUnit = .Kilogram
-    var timer: Timer?
+    var processTimer: Timer?
+    var notifyTimer: Timer?
     var user: User?
     var connected: Bool = false
     var weightNotified: Date?
@@ -203,21 +204,13 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             connected == false{
             index = 1
             lastIndex = 0
-            timer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(fireTimer), userInfo: nil, repeats: true)
+            print("Start timer")
+            processTimer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(fireTimer), userInfo: nil, repeats: true)
         }
     }
 
     @objc func fireTimer() {
         nextStep()
-
-        if weight == 0 {
-            return
-        }
-        let utterance = AVSpeechUtterance(string: "\(weight)")
-        utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
-        let synthesizer = AVSpeechSynthesizer()
-        synthesizer.speak(utterance)
-        weight = 0
     }
 
     func nextStep() {
@@ -226,7 +219,7 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         guard let scale = self.scale else { return }
         guard let user = self.user else { return }
 
-        print("execute step #\(index)")
+        print("execute step #\(index) #\(lastIndex)")
         lastIndex = index
         switch(index) {
         case 1:
@@ -303,9 +296,10 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             scale.setNotifyValue(true, for: chars[WEIGHT_MEASUREMENT_CHAR_UUID]!)
             break
         default:
+            print("timer stop")
             connected = true
             delegate.updated(state: .Connected)
-            timer?.invalidate()
+            processTimer?.invalidate()
             return
         }
     }
@@ -363,11 +357,11 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             let measurement = GATTWeightMeasurement(data: data)
             delegate.updated(weight: measurement)
 
-            if timer != nil {
-                timer?.invalidate()
+            if notifyTimer != nil {
+                notifyTimer?.invalidate()
             }
 
-            timer = Timer.scheduledTimer(timeInterval: 1.0, target: self,
+            notifyTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self,
                                          selector: #selector(measured), userInfo: nil, repeats: false)
         } else if characteristic.uuid == BODY_COMPOSITION_MEASUREMENT_CHAR_UUID {
             if bodyCompositionMeasurementBuffer == nil {
