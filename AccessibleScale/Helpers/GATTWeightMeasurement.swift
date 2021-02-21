@@ -10,10 +10,10 @@ import Foundation
 struct GATTWeightMeasurement {
 
     let measurementUnit: ScaleUnit
-    let weight: Float
+    let weight: Double
     let timestamp: Date?
     let userID: UInt8?
-    let bmi: Float?
+    let bmi: Double?
 
     let measurementUnitBit = 1
     let timestampBit = 2
@@ -26,11 +26,11 @@ struct GATTWeightMeasurement {
         let length = data.count
         
         measurementUnit = GATTUtil.flag(flag, measurementUnitBit) ? ScaleUnit.Pound : ScaleUnit.Kilogram
-        let massFactor = GATTUtil.flag(flag, measurementUnitBit) ? Float(0.01) : Float(0.05)
+        let massFactor = GATTUtil.flag(flag, measurementUnitBit) ? 0.01 : 0.05
 
-        weight =     GATTUtil.float16(data, &index) * massFactor
+        weight =     Double(GATTUtil.uint16(data, &index)) * massFactor
         timestamp = (GATTUtil.flag(flag, timestampBit) && index + 7 < length) ? GATTDate(data: data, start: &index).date : nil
         userID =    (GATTUtil.flag(flag, userIDBit) && index + 1 < length) ?    GATTUtil.uint8(data, &index) : nil
-        bmi =       (GATTUtil.flag(flag, bmiBit) && index + 2 < length) ?       GATTUtil.float16(data, &index) : nil
+        bmi =       (GATTUtil.flag(flag, bmiBit) && index + 2 < length) ?       Double(GATTUtil.uint16(data, &index)) : nil
     }
 }

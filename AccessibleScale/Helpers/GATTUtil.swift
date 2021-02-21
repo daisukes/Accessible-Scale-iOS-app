@@ -45,26 +45,6 @@ class GATTUtil {
         return UInt32(b1) | UInt32(b2) << 8 | UInt32(b3) << 16 | UInt32(b4) << 24
     }
 
-    static func float16(_ data: Data, _ start: inout Int) -> Float {
-        let i1 = start
-        let i2 = start+1
-        start += 2
-        return float16(data[i1], data[i2])
-    }
-
-    // little endian
-    // convert uint16 to Float
-    static func float16(_ b1: UInt8, _ b2: UInt8) -> Float {
-        return Float(UInt16(b1) + UInt16(b2) * 256)
-    }
-
-    static func rest(_ data: Data, _ start: inout Int) -> Data? {
-        if data.count < start {
-            return data.subdata(in: Data.Index(start)..<Data.Index(data.count))
-        }
-        return nil
-    }
-
     static func append(_ data: inout Data, _ item: UInt8) {
         data.append(item)
     }

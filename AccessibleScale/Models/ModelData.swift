@@ -19,8 +19,8 @@ final class ModelData: ObservableObject {
 
     @Published var connected: Bool = false
     @Published var userRegistered: Bool = false
-    @Published var weight: Float = 0
-    @Published var fat: Float = 0
+    @Published var weight: Double = 0
+    @Published var fat: Double = 0
     @Published var unit: ScaleUnit = .Kilogram
     @Published var displayedScene: DisplayedScene = .Onboard
 
@@ -51,7 +51,7 @@ final class ModelData: ObservableObject {
             }
             .eraseToAnyPublisher()
     }
-    private var weightUnitChanged: AnyPublisher<Float, Never> {
+    private var weightUnitChanged: AnyPublisher<Double, Never> {
         $unit
             .map { input in
                 let unit = self.unit

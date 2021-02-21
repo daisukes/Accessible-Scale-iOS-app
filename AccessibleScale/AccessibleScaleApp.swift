@@ -197,7 +197,7 @@ struct AccessibleScaleApp: App, ScaleDelegate {
     }
 
     func updated(weight: GATTWeightMeasurement) {
-        let massFactor = (modelData.unit == .Kilogram) ? 1 : Float(0.453592)
+        let massFactor = (modelData.unit == .Kilogram) ? 1 : 0.453592
         modelData.weight = weight.weight / massFactor
     }
 
