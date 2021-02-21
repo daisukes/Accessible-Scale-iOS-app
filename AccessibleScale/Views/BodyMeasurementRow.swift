@@ -20,10 +20,6 @@ struct BodyMeasurementRow: View {
         return HStack {
             Text(String(format:"%.2f \(measurement.label!)", measurement.weight))
             
-            if let fat_free_mass = measurement.composite?.fat_free_mass {
-                let fat_rate = (1.0 - fat_free_mass / measurement.weight) * 100
-                Text(String(format:"%.2f %%", fat_rate))
-            }
             
             Spacer()
             Text(relativeDate)

@@ -23,14 +23,11 @@ struct PersistenceController {
 
         for _ in 0..<20 {
             let newItem = BodyMeasurement(context: viewContext)
-            newItem.weight = Float.random(in: 1..<5.0)+60.0
+            newItem.weight = Double.random(in: 1..<5.0)+60.0
             newItem.timestamp = Date().advanced(by: TimeInterval(-Int.random(in: 100...100000)))
             newItem.unit = ScaleUnit.Kilogram.rawValue
             newItem.label = ScaleUnit.Kilogram.label()
             newItem.user = user
-            let composite = BodyComposite(context: viewContext)
-            composite.fat_free_mass = 50
-            newItem.composite = composite
         }
         do {
             try viewContext.save()
