@@ -361,7 +361,7 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
                 notifyTimer?.invalidate()
             }
 
-            notifyTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self,
+            notifyTimer = Timer.scheduledTimer(timeInterval: 0.5, target: self,
                                          selector: #selector(measured), userInfo: nil, repeats: false)
         } else if characteristic.uuid == BODY_COMPOSITION_MEASUREMENT_CHAR_UUID {
             if bodyCompositionMeasurementBuffer == nil {

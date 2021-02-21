@@ -9,7 +9,7 @@ import SwiftUI
 import CoreData
 
 struct OnboardView1: View {
-    static let number_of_steps: Int = 6
+    static let number_of_steps: Int = 7
     @EnvironmentObject var modelData:ModelData
 
     let title = "Welcome"

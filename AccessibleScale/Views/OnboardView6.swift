@@ -16,7 +16,7 @@ struct OnboardView6: View {
 
     var body: some View {
         VStack {
-            Text("The last step")
+            Text(String(format:"Step 6 out of %d", OnboardView1.number_of_steps))
                 .padding()
 
             Text(modelData.connected ?
@@ -26,10 +26,11 @@ struct OnboardView6: View {
 
             HStack {
                 Spacer()
-                Button("Next") {
-                    modelData.displayedScene = .Scale
+                NavigationLink(destination: OnboardView7()
+                                .environmentObject(modelData)) {
+                    Text("Next")
+                        .padding()
                 }
-                .padding()
                 .disabled(!modelData.userRegistered)
             }
         }

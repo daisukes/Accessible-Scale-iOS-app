@@ -14,7 +14,9 @@ import Combine
 
 final class ModelData: ObservableObject {
     @Published var bluetoothState: CBManagerState = .unknown
-    @Published var notificationState: NotificationCenterState = .Init
+    @Published var notificationState: GrantState = .Init
+    @Published var healthKitState: GrantState = .Init
+
     @Published var connected: Bool = false
     @Published var userRegistered: Bool = false
     @Published var weight: Float = 0
@@ -25,6 +27,8 @@ final class ModelData: ObservableObject {
     @Published var date_of_birth: Date = SimpleDate.date19700101
     @Published var height: Int = 165
     @Published var gender: Gender = Gender.Female
+
+    var lastWeightNotify: TimeInterval = 0
 
     private var cancellableSet: Set<AnyCancellable> = []
 
@@ -101,6 +105,10 @@ final class ModelData: ObservableObject {
 
     func localizedFatString() -> String {
         return String(format: "%.1f %%", fat)
+    }
+
+    func localizedWeightFatString() -> String {
+        return String(format: "%@, %@", localizedWeightString(), localizedFatString())
     }
 
     func save() {
@@ -211,7 +219,7 @@ enum DisplayedScene {
     case Scale
 }
 
-enum NotificationCenterState {
+enum GrantState {
     case Init
     case Granted
     case Denied
