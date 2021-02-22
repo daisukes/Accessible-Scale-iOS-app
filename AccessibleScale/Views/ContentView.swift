@@ -47,20 +47,18 @@ struct ContentView: View {
                 .padding()
                 .font(.headline)
 
-            if let user = modelData.user {
-                if let measurements = user.measurements?.allObjects as? [BodyMeasurement] {
-                    List {
-                        ForEach (measurements.sorted { $0.timestamp! > $1.timestamp! }, id: \.self) { measurement in
-                            NavigationLink (destination: MeasurementDetail(measurement: measurement)
-                                                .environmentObject(modelData)) {
-                                BodyMeasurementRow(measurement: measurement)
-                                    .environmentObject(modelData)
-                            }
+            if let measurements = modelData.user?.measurements?.allObjects as? [BodyMeasurement] ?? [] {
+                List {
+                    ForEach (measurements.sorted { $0.timestamp! > $1.timestamp! }, id: \.self) { measurement in
+                        NavigationLink (destination: MeasurementDetail(measurement: measurement)
+                                            .environmentObject(modelData)) {
+                            BodyMeasurementRow(measurement: measurement)
+                                .environmentObject(modelData)
                         }
-                        .onDelete(perform: delete)
                     }
-                    .listStyle(PlainListStyle())
+                    .onDelete(perform: delete)
                 }
+                .listStyle(PlainListStyle())
             }
         }
         .navigationBarTitle("", displayMode: .inline)
@@ -94,7 +92,6 @@ struct ContentView: View {
                 let sorted = measurements.sorted { $0.timestamp! > $1.timestamp! }
 
                 for offset in offsets {
-                    sorted[offset].user = nil
                     modelData.delete(data: sorted[offset])
                 }
                 modelData.save()

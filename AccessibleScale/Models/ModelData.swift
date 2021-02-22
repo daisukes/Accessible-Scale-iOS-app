@@ -188,8 +188,25 @@ final class ModelData: ObservableObject {
         return bodyMeasurementData
     }
 
-    // MARK: User related functions
+    func updated(weight: GATTWeightMeasurement) {
+        measurement.measurementUnit = weight.measurementUnit
+        measurement.weight = weight.weight
+        measurement.bodyMassIndex = weight.bmi ?? 0
+    }
 
+    func updated(bodyComposition: GATTBodyCompositionMeasurement) {
+        measurement.fatPercentage = bodyComposition.fatPercentage
+        measurement.basalMetabolism = bodyComposition.basalMetabolism.map{Int($0)}
+        measurement.bodyWaterMass = bodyComposition.bodyWaterMass
+        measurement.fatFreeMass = bodyComposition.fatFreeMass
+        measurement.impedance = bodyComposition.impedance.map{Int($0)}
+        measurement.muscleMass = bodyComposition.muscleMass
+        measurement.musclePercentage = bodyComposition.musclePercentage
+        measurement.softLeanMass = bodyComposition.softLeanMass
+    }
+
+
+    // MARK: User related functions
 
     private func users() -> [User] {
         guard let userHelper = userHelper else {
@@ -216,6 +233,8 @@ final class ModelData: ObservableObject {
         user.height = Int16(height)
         user.date_of_birth = date_of_birth
         user.gender = gender.rawValue
+
+        self.user = user
 
         do {
             try viewContext.save()
@@ -271,8 +290,109 @@ final class ModelData: ObservableObject {
     }
 
     func delete(data: BodyMeasurement) {
+        if let entries = data.stored_entries?.allObjects as? [StoredEntry] {
+            let healthStore = HKHealthStore()
+
+            for entry in entries {
+                if let uuid = entry.uuid {
+                    let predicate = HKQuery.predicateForObject(with: uuid)
+
+                    for type in [bodyMassType, fatPercentageType] {
+                        let query = HKSampleQuery(sampleType: type, predicate: predicate, limit: 1, sortDescriptors: nil) { (query, samples, error) in
+                            if let samples = samples {
+                                for sample in samples {
+                                    healthStore.delete(sample) {_,_ in
+
+                                    }
+                                }
+                            }
+                        }
+                        healthStore.execute(query)
+                    }
+                }
+            }
+        }
+        data.user = nil
         self.viewContext.delete(data)
     }
+
+    func updateCoreData(state: Scale.State) {
+        guard measurement.weight ?? 0 > 0 else { return }
+        guard let bodyMeasuremnt = prepareBodyMeasurement() else { return }
+
+        if let user = user {
+            bodyMeasuremnt.user = user
+        }
+
+        if state == .WeightMeasured {
+            bodyMeasuremnt.unit = unit.rawValue
+            bodyMeasuremnt.weight = measurement.weight(inUnit: unit)
+            bodyMeasuremnt.body_mass_index = measurement.bodyMassIndex ?? 0
+        }
+
+        if state == .CompositeMeasured {
+            bodyMeasuremnt.fat_percentage = measurement.fatPercentage ?? 0
+            bodyMeasuremnt.basal_metabolism = Int32(measurement.basalMetabolism ?? 0)
+            bodyMeasuremnt.body_water_mass = measurement.bodyWaterMass(inUnit: unit)
+            bodyMeasuremnt.fat_free_mass = measurement.fatFreeMass(inUnit: unit)
+            bodyMeasuremnt.impedance = Int32(measurement.impedance ?? 0)
+            bodyMeasuremnt.muscle_mass = measurement.muscleMass(inUnit: unit)
+            bodyMeasuremnt.muscle_percentage = measurement.musclePercentage ?? 0
+            bodyMeasuremnt.soft_lean_mass = measurement.softLeanMass(inUnit: unit)
+        }
+
+        save()
+    }
+
+    // MARK: Apple Healthkit
+
+    private let bodyMassType = HKObjectType.quantityType(forIdentifier: .bodyMass)!
+    private let fatPercentageType = HKObjectType.quantityType(forIdentifier: .bodyFatPercentage)!
+
+    func updateHealthKit(state: Scale.State) {
+        guard measurement.weight ?? 0 > 0 else { return }
+        guard let bodyMeasuremnt = prepareBodyMeasurement() else { return }
+
+        if HKHealthStore.isHealthDataAvailable() {
+            // Add code to use HealthKit here.
+            let healthStore = HKHealthStore()
+            let now = Date()
+
+            if state == .WeightMeasured {
+                let status = healthStore.authorizationStatus(for: bodyMassType)
+                if status == .sharingAuthorized {
+                    let hkunit: HKUnit = (unit == .Kilogram) ? .gram() : .pound()
+                    let value = measurement.weight(inUnit: unit) * (unit == .Kilogram ? 1000 : 1)
+                    let weight = HKQuantity(unit: hkunit, doubleValue: Double(value))
+                    let sample = HKQuantitySample(type: bodyMassType, quantity: weight, start: now, end: now)
+                    healthStore.save(sample) { (success, error) in
+                    }
+
+                    let entry = StoredEntry(context: viewContext)
+                    entry.uuid = sample.uuid
+                    entry.measurement = bodyMeasuremnt
+                    save()
+                }
+            }
+
+            if state == .CompositeMeasured {
+                let status = healthStore.authorizationStatus(for: fatPercentageType)
+                if status == .sharingAuthorized {
+                    let unit: HKUnit = .percent()
+                    let value = measurement.fatPercentage! / 100
+                    let weight = HKQuantity(unit: unit, doubleValue: Double(value))
+                    let sample = HKQuantitySample(type: fatPercentageType, quantity: weight, start: now, end: now)
+                    healthStore.save(sample) { (success, error) in
+                    }
+                    let entry = StoredEntry(context: viewContext)
+                    entry.uuid = sample.uuid
+                    entry.measurement = bodyMeasuremnt
+                    save()
+                }
+            }
+        }
+    }
+
 }
 
 // MARK: Enums and Utilities

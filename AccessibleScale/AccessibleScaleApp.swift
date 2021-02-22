@@ -67,13 +67,13 @@ struct AccessibleScaleApp: App, ScaleDelegate {
             break
         case .WeightMeasured:
             notifyMeasurement(state: state)
-            updateCoreData(state: state)
-            updateHealthKit(state: state)
+            modelData.updateCoreData(state: state)
+            modelData.updateHealthKit(state: state)
             break
         case .CompositeMeasured:
             notifyMeasurement(state: state)
-            updateCoreData(state: state)
-            updateHealthKit(state: state)
+            modelData.updateCoreData(state: state)
+            modelData.updateHealthKit(state: state)
             break
         case .Idle:
             break
@@ -81,20 +81,11 @@ struct AccessibleScaleApp: App, ScaleDelegate {
     }
 
     func updated(weight: GATTWeightMeasurement) {
-        modelData.measurement.measurementUnit = weight.measurementUnit
-        modelData.measurement.weight = weight.weight
-        modelData.measurement.bodyMassIndex = weight.bmi ?? 0
+        modelData.updated(weight: weight)
     }
 
     func updated(bodyComposition: GATTBodyCompositionMeasurement) {
-        modelData.measurement.fatPercentage = bodyComposition.fatPercentage
-        modelData.measurement.basalMetabolism = bodyComposition.basalMetabolism.map{Int($0)}
-        modelData.measurement.bodyWaterMass = bodyComposition.bodyWaterMass
-        modelData.measurement.fatFreeMass = bodyComposition.fatFreeMass
-        modelData.measurement.impedance = bodyComposition.impedance.map{Int($0)}
-        modelData.measurement.muscleMass = bodyComposition.muscleMass
-        modelData.measurement.musclePercentage = bodyComposition.musclePercentage
-        modelData.measurement.softLeanMass = bodyComposition.softLeanMass
+        modelData.updated(bodyComposition: bodyComposition)
     }
 
     // MARK: private functions
@@ -178,77 +169,6 @@ struct AccessibleScaleApp: App, ScaleDelegate {
                 let message = "Fat percentage measurement error"
                 let sound = UNNotificationSound.default
                 notify(message, sound: sound)
-            }
-        }
-    }
-
-    // MARK: Core Data
-
-    private func updateCoreData(state: Scale.State) {
-        guard modelData.measurement.weight ?? 0 > 0 else { return }
-        guard let bodyMeasuremnt = modelData.prepareBodyMeasurement() else { return }
-        let unit = modelData.unit
-        let measurement = modelData.measurement
-
-        if let user = modelData.user {
-            bodyMeasuremnt.user = user
-        }
-
-        if state == .WeightMeasured {
-            bodyMeasuremnt.unit = unit.rawValue
-            bodyMeasuremnt.weight = measurement.weight(inUnit: modelData.unit)
-            bodyMeasuremnt.body_mass_index = measurement.bodyMassIndex ?? 0
-        }
-
-        if state == .CompositeMeasured {
-            bodyMeasuremnt.fat_percentage = measurement.fatPercentage ?? 0
-            bodyMeasuremnt.basal_metabolism = Int32(measurement.basalMetabolism ?? 0)
-            bodyMeasuremnt.body_water_mass = measurement.bodyWaterMass(inUnit: unit)
-            bodyMeasuremnt.fat_free_mass = measurement.fatFreeMass(inUnit: unit)
-            bodyMeasuremnt.impedance = Int32(measurement.impedance ?? 0)
-            bodyMeasuremnt.muscle_mass = measurement.muscleMass(inUnit: unit)
-            bodyMeasuremnt.muscle_percentage = measurement.musclePercentage ?? 0
-            bodyMeasuremnt.soft_lean_mass = measurement.softLeanMass(inUnit: unit)
-        }
-
-        modelData.save()
-    }
-
-    // MARK: Apple Healthkit
-
-    private let bodyMassType = HKObjectType.quantityType(forIdentifier: .bodyMass)!
-    private let fatPercentageType = HKObjectType.quantityType(forIdentifier: .bodyFatPercentage)!
-
-    private func updateHealthKit(state: Scale.State) {
-        guard modelData.measurement.weight ?? 0 > 0 else { return }
-
-        if HKHealthStore.isHealthDataAvailable() {
-            // Add code to use HealthKit here.
-            let healthStore = HKHealthStore()
-            let now = Date()
-
-            if state == .WeightMeasured {
-                let status = healthStore.authorizationStatus(for: bodyMassType)
-                if status == .sharingAuthorized {
-                    let unit: HKUnit = (modelData.unit == .Kilogram) ? .gram() : .pound()
-                    let value = modelData.measurement.weight(inUnit: modelData.unit) * (modelData.unit == .Kilogram ? 1000 : 1)
-                    let weight = HKQuantity(unit: unit, doubleValue: Double(value))
-                    let sample = HKQuantitySample(type: bodyMassType, quantity: weight, start: now, end: now)
-                    healthStore.save(sample) { (success, error) in
-                    }
-                }
-            }
-
-            if state == .CompositeMeasured {
-                let status = healthStore.authorizationStatus(for: fatPercentageType)
-                if status == .sharingAuthorized {
-                    let unit: HKUnit = .percent()
-                    let value = modelData.measurement.fatPercentage! / 100
-                    let weight = HKQuantity(unit: unit, doubleValue: Double(value))
-                    let sample = HKQuantitySample(type: fatPercentageType, quantity: weight, start: now, end: now)
-                    healthStore.save(sample) { (success, error) in
-                    }
-                }
             }
         }
     }

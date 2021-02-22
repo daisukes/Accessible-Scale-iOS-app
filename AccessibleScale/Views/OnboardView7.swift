@@ -64,7 +64,7 @@ struct OnboardView7: View {
                                     HKObjectType.quantityType(forIdentifier: .bodyFatPercentage)!])
 
                 // request to authorize write acess
-                healthStore.requestAuthorization(toShare: allTypes, read: []) { (success, error) in
+                healthStore.requestAuthorization(toShare: allTypes, read: allTypes) { (success, error) in
                     // todo
                     // this returns sucess even if the user denied
 

@@ -4,6 +4,8 @@
 <dict>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>Accessible scale will save your measurement data in Apple Health</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Accessible scale will update (delete) your measurement data in Apple Health</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleExecutable</key>

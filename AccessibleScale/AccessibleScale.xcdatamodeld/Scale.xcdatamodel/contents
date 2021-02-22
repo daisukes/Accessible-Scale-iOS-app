@@ -13,7 +13,12 @@
         <attribute name="timestamp" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="unit" attributeType="String"/>
         <attribute name="weight" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <relationship name="stored_entries" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="StoredEntry" inverseName="measurement" inverseEntity="StoredEntry"/>
         <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" inverseName="measurements" inverseEntity="User"/>
+    </entity>
+    <entity name="StoredEntry" representedClassName="StoredEntry" syncable="YES" codeGenerationType="class">
+        <attribute name="uuid" attributeType="UUID" usesScalarValueType="NO"/>
+        <relationship name="measurement" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="BodyMeasurement" inverseName="stored_entries" inverseEntity="BodyMeasurement"/>
     </entity>
     <entity name="User" representedClassName="User" syncable="YES" codeGenerationType="class">
         <attribute name="date_of_birth" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
@@ -26,7 +31,8 @@
         <relationship name="measurements" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="BodyMeasurement" inverseName="user" inverseEntity="BodyMeasurement"/>
     </entity>
     <elements>
-        <element name="BodyMeasurement" positionX="-575.94921875" positionY="-478.625" width="128" height="224"/>
+        <element name="BodyMeasurement" positionX="-575.94921875" positionY="-478.625" width="128" height="239"/>
         <element name="User" positionX="-591.05859375" positionY="-23.54296875" width="128" height="149"/>
+        <element name="StoredEntry" positionX="-576" positionY="-306" width="128" height="59"/>
     </elements>
 </model>
