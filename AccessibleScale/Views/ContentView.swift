@@ -18,11 +18,12 @@ struct ContentView: View {
     var body: some View {
         let users = modelData.users()
         return VStack {
-            Spacer()
-            
+            Label("Connected", systemImage: "dot.radiowaves.left.and.right")
+                .isHidden(!modelData.connected)
+
             HStack {
                 Spacer().frame(width: 50.0)
-                Text(String(format: "%05.2f", modelData.measurement.weight ?? 0))
+                Text(String(format: "%05.2f", modelData.weightInUserUnit()))
                     .font(.system(size: 60))
                 Text(modelData.unit.label())
                     .font(.largeTitle)
@@ -60,17 +61,21 @@ struct ContentView: View {
         }
         .navigationBarTitle("", displayMode: .inline)
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
+            ToolbarItem(placement: .navigationBarTrailing) {
                 NavigationLink (destination: UserDetail()
                                     .environmentObject(modelData)) {
                     Label("Your account", systemImage: "person.crop.circle")
                 }
             }
+
+            /*
+             When UserDetail view is present and modelData.connected is changed
+             somehow the second UserDetail is present
             ToolbarItem(placement: .navigationBarLeading) {
-                if modelData.connected {
-                    Label("Connected", systemImage: "dot.radiowaves.left.and.right")
-                }
+                Label("Connected", systemImage: "dot.radiowaves.left.and.right")
+                    .isHidden(!modelData.connected)
             }
+             */
         }
         .onAppear {
             if modelData.users().count > 0 {

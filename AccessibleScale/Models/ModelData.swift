@@ -26,6 +26,30 @@ struct Measurement {
     var impedance: Int?
 }
 
+extension Measurement {
+    func value(forKey: String, inUnit: ScaleUnit) -> Double {
+        let mirror = Mirror(reflecting: self)
+
+        for child in mirror.children {
+            if child.label == forKey {
+                if let value = child.value as? Double {
+                    if measurementUnit != inUnit {
+                        if inUnit == .Kilogram {
+                            return ScaleUnit.toKilogram(pound: value)
+                        }
+                        if inUnit == .Pound{
+                            return ScaleUnit.toPound(kilogram: value)
+                        }
+                    } else {
+                        return value
+                    }
+                }
+            }
+        }
+        return 0
+    }
+}
+
 final class ModelData: ObservableObject {
     @Published var bluetoothState: CBManagerState = .unknown
     @Published var notificationState: GrantState = .Init
@@ -49,6 +73,16 @@ final class ModelData: ObservableObject {
 
     var viewContext: NSManagedObjectContext!
     lazy var userHelper: UserHelper? = UserHelper(context: viewContext)
+    private var cancellableSet: Set<AnyCancellable> = []
+
+    // ToDo: can be cleaner
+    private var heightUnitChanged: AnyPublisher<Int, Never> {
+        $unit
+            .map { input in
+                return Int(round(ScaleUnit.length(Double(self.height), from: input, to: self.unit)))
+            }
+            .eraseToAnyPublisher()
+    }
 
     convenience init() {
         self.init(viewContext: PersistenceController.shared.container.viewContext)
@@ -63,6 +97,15 @@ final class ModelData: ObservableObject {
             date_of_birth = user.date_of_birth!
             gender = Gender(rawValue: user.gender!)!
         }
+
+        heightUnitChanged
+            .receive(on: RunLoop.main)
+            .assign(to: \.height, on: self)
+            .store(in: &cancellableSet)
+    }
+
+    func weightInUserUnit() -> Double {
+        measurement.value(forKey: "weight", inUnit: unit)
     }
 
     func localizedWeightString() -> String {
@@ -191,6 +234,36 @@ enum ScaleUnit: String {
         case ScaleUnit.Pound:
             return "lb"
         }
+    }
+
+    static let poundToKilogram = UnitConverterLinear(coefficient: 2.20462)
+
+    static func toPound(kilogram: Double) -> Double {
+        return poundToKilogram.baseUnitValue(fromValue: kilogram)
+    }
+
+    static func toKilogram(pound: Double) -> Double {
+        return poundToKilogram.value(fromBaseUnitValue: pound)
+    }
+
+    static let inchToCm = UnitConverterLinear(coefficient: 2.54)
+
+    static func toInch(cm: Double) -> Double {
+        return inchToCm.baseUnitValue(fromValue: cm)
+    }
+
+    static func toCm(inch: Double) -> Double {
+        return inchToCm.value(fromBaseUnitValue: inch)
+    }
+
+    static func length(_ value:Double, from:ScaleUnit, to:ScaleUnit) -> Double {
+        if from == .Kilogram && to == .Pound {
+            return toInch(cm: value)
+        }
+        if from == .Pound && to == .Kilogram {
+            return toCm(inch: value)
+        }
+        return value
     }
 }
 

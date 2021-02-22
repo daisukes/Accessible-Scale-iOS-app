@@ -33,7 +33,6 @@
 		7EDFB96725D990AB008179BE /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7EDFB96625D990AB008179BE /* Preview Assets.xcassets */; };
 		7EDFB97225D990AB008179BE /* AccessibleScaleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EDFB97125D990AB008179BE /* AccessibleScaleTests.swift */; };
 		7EDFB97D25D990AB008179BE /* AccessibleScaleUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EDFB97C25D990AB008179BE /* AccessibleScaleUITests.swift */; };
-		7EDFB9B525DA125B008179BE /* ScaleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EDFB9B425DA125B008179BE /* ScaleView.swift */; };
 		7EDFB9BA25DA128A008179BE /* ModelData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EDFB9B925DA128A008179BE /* ModelData.swift */; };
 		7EDFB9C825DA1B48008179BE /* Scale.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EDFB9C725DA1B47008179BE /* Scale.swift */; };
 		7EDFB9CD25DA1B77008179BE /* Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EDFB9CC25DA1B77008179BE /* Extension.swift */; };
@@ -90,7 +89,6 @@
 		7EDFB97825D990AB008179BE /* AccessibleScaleUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AccessibleScaleUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7EDFB97C25D990AB008179BE /* AccessibleScaleUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibleScaleUITests.swift; sourceTree = "<group>"; };
 		7EDFB97E25D990AB008179BE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		7EDFB9B425DA125B008179BE /* ScaleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleView.swift; sourceTree = "<group>"; };
 		7EDFB9B925DA128A008179BE /* ModelData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelData.swift; sourceTree = "<group>"; };
 		7EDFB9C725DA1B47008179BE /* Scale.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Scale.swift; sourceTree = "<group>"; };
 		7EDFB9CC25DA1B77008179BE /* Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extension.swift; sourceTree = "<group>"; };
@@ -143,7 +141,6 @@
 			children = (
 				304C568F25DDB0FC00C765D8 /* RootView.swift */,
 				7EDFB96125D990A8008179BE /* ContentView.swift */,
-				7EDFB9B425DA125B008179BE /* ScaleView.swift */,
 				304C563825DCC3E800C765D8 /* UserDetail.swift */,
 				304C563D25DCD8D600C765D8 /* BodyMeasurementRow.swift */,
 				304C564725DCF09300C765D8 /* MeasurementDetail.swift */,
@@ -378,7 +375,6 @@
 				307F7C0025E02273008A6458 /* GATTBodyCompositionMeasurement.swift in Sources */,
 				304C569025DDB0FC00C765D8 /* RootView.swift in Sources */,
 				304C562425DC776800C765D8 /* Persistence.swift in Sources */,
-				7EDFB9B525DA125B008179BE /* ScaleView.swift in Sources */,
 				304C565B25DD6BAA00C765D8 /* OnboardView2.swift in Sources */,
 				307F7C1825E03DA2008A6458 /* GATTUserData.swift in Sources */,
 				7EDFB9BA25DA128A008179BE /* ModelData.swift in Sources */,
