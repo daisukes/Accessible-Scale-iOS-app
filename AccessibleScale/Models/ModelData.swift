@@ -13,79 +13,41 @@ import UserNotifications
 import Combine
 import HealthKit
 
-struct Measurement {
-    var measurementUnit: ScaleUnit?
-    var weight: Double?
-    var fatPercentage: Double?
-    var bodyMassIndex: Double?
-    var basalMetabolism: Int?
-    var musclePercentage: Double?
-    var muscleMass: Double?
-    var fatFreeMass: Double?
-    var softLeanMass: Double?
-    var bodyWaterMass: Double?
-    var impedance: Int?
-}
-
-extension Measurement {
-    func weight(inUnit: ScaleUnit) -> Double {
-        return value(weight ?? 0, inUnit: inUnit)
-    }
-    func muscleMass(inUnit: ScaleUnit) -> Double {
-        return value(muscleMass ?? 0, inUnit: inUnit)
-    }
-    func fatFreeMass(inUnit: ScaleUnit) -> Double {
-        return value(fatFreeMass ?? 0, inUnit: inUnit)
-    }
-    func softLeanMass(inUnit: ScaleUnit) -> Double {
-        return value(softLeanMass ?? 0, inUnit: inUnit)
-    }
-    func bodyWaterMass(inUnit: ScaleUnit) -> Double {
-        return value(bodyWaterMass ?? 0, inUnit: inUnit)
-    }
-
-    func value(_ value: Double, inUnit: ScaleUnit) -> Double {
-        if measurementUnit != inUnit {
-            if inUnit == .Kilogram {
-                return ScaleUnit.toKilogram(pound: value)
-            }
-            if inUnit == .Pound{
-                return ScaleUnit.toPound(kilogram: value)
-            }
-        }
-        return value
-    }
-}
-
 
 final class ModelData: ObservableObject {
+
+    // authorization status
     @Published var bluetoothState: CBManagerState = .unknown
     @Published var notificationState: GrantState = .Init
     @Published var healthKitState: GrantState = .Init
 
+    // app status
     @Published var connected: Bool = false
     @Published var userRegistered: Bool = false
+    @Published var displayedScene: DisplayedScene = .Onboard
 
+    // user preference
     @Published var unit: ScaleUnit = .Kilogram
     @Published var height: Int = 165
     @Published var date_of_birth: Date = SimpleDate.date19700101
     @Published var gender: Gender = Gender.Female
-
-    @Published var measurement = Measurement()
     @Published var user: User?
+
+    // measurement
+    @Published var measurement = Measurement()
     @Published var lastUpdated: Date = Date()
 
-    @Published var displayedScene: DisplayedScene = .Onboard
-
     // Core Data
+    var viewContext: NSManagedObjectContext!
     var bodyMeasurementData: BodyMeasurement?
+    lazy var userHelper: UserHelper? = UserHelper(context: viewContext)
+
+    // Notification
     var lastWeightNotify: TimeInterval = 0
 
-    var viewContext: NSManagedObjectContext!
-    lazy var userHelper: UserHelper? = UserHelper(context: viewContext)
+    // Unit conversion based on preference
     private var cancellableSet: Set<AnyCancellable> = []
 
-    // ToDo: can be cleaner
     private var heightUnitChanged: AnyPublisher<Int, Never> {
         $unit
             .map { input in
@@ -94,6 +56,7 @@ final class ModelData: ObservableObject {
             .eraseToAnyPublisher()
     }
 
+    // MARK: Initializer
     convenience init() {
         self.init(viewContext: PersistenceController.shared.container.viewContext)
     }
@@ -102,9 +65,11 @@ final class ModelData: ObservableObject {
         print("initialize viewContext \(viewContext)")
         self.viewContext = viewContext
 
+        // show onboard view if there is no user
         if let userHelper = self.userHelper {
             displayedScene = userHelper.count() > 0 ? .Scale : .Onboard
         }
+        // get main user
         if let user = mainUser() {
             unit = ScaleUnit(rawValue: user.unit!)!
             height = Int(user.height)
@@ -113,6 +78,7 @@ final class ModelData: ObservableObject {
             self.user = user
         }
 
+        // set unit change event
         heightUnitChanged
             .receive(on: RunLoop.main)
             .assign(to: \.height, on: self)
@@ -123,6 +89,7 @@ final class ModelData: ObservableObject {
         measurement.weight(inUnit: unit)
     }
 
+    // TODO Localize
     func localizedWeightString() -> String {
         let weight = measurement.weight ?? 0
         return String(format: "%.1f %@", weight, unit.rawValue)
@@ -137,6 +104,7 @@ final class ModelData: ObservableObject {
         return String(format: "%@, %@", localizedWeightString(), localizedFatString())
     }
 
+    // TODO better way to reset BodyBeasurement instance
     func prepareBodyMeasurement() -> BodyMeasurement? {
         let now = Date()
         if let bodyMeasurement = self.bodyMeasurementData {
@@ -154,7 +122,13 @@ final class ModelData: ObservableObject {
         return bodyMeasurementData
     }
 
-    func disconnected() {
+    func scaleConnected() {
+        connected = true
+        measurement = Measurement()
+        lastWeightNotify = 0
+    }
+
+    func scaleDisconnected() {
         connected = false
         bodyMeasurementData = nil
     }
@@ -241,13 +215,13 @@ final class ModelData: ObservableObject {
         }
         if changed {
             user.written = false
-            save()
+            saveCoreData()
         }
     }
 
-    // MARK: CoreData
+    // MARK: CoreData and HealthKit
 
-    func save() {
+    func saveCoreData() {
         do {
             print("saving change")
             try viewContext.save()
@@ -290,6 +264,26 @@ final class ModelData: ObservableObject {
     private let bodyMassType = HKObjectType.quantityType(forIdentifier: .bodyMass)!
     private let fatPercentageType = HKObjectType.quantityType(forIdentifier: .bodyFatPercentage)!
 
+    func authorizeHealthkit() {
+        if HKHealthStore.isHealthDataAvailable() {
+            let healthStore = HKHealthStore()
+
+            let allTypes = Set([bodyMassType, fatPercentageType])
+
+            healthStore.requestAuthorization(toShare: allTypes, read: allTypes) { (success, error) in
+                // todo
+                // this returns sucess even if the user denied
+
+                DispatchQueue.main.async {
+                    self.healthKitState = success ? .Granted : .Denied
+                }
+                if !success {
+
+                }
+            }
+        }
+    }
+
     func updateCoreDataAndHealthKit(state: Scale.State) {
         guard measurement.weight ?? 0 > 0 else { return }
         guard let bodyMeasuremnt = prepareBodyMeasurement() else { return }
@@ -319,6 +313,8 @@ final class ModelData: ObservableObject {
 
         // do not save if .CompositeMeasured comes first
         if bodyMeasuremnt.weight > 0 {
+            saveCoreData()
+
             let status = healthStore.authorizationStatus(for: bodyMassType)
             if status == .sharingAuthorized {
                 let hkunit: HKUnit = (unit == .Kilogram) ? .gram() : .pound()
@@ -347,117 +343,5 @@ final class ModelData: ObservableObject {
                 }
             }
         }
-
-        save()
-    }
-
-}
-
-// MARK: Enums and Utilities
-
-enum ScaleUnit: String {
-    case Kilogram = "kilo grams"
-    case Pound = "pounds"
-
-    func label() -> String {
-        switch(self) {
-        case ScaleUnit.Kilogram:
-            return "kg"
-        case ScaleUnit.Pound:
-            return "lb"
-        }
-    }
-
-    static let poundToKilogram = UnitConverterLinear(coefficient: 2.20462)
-
-    static func toPound(kilogram: Double) -> Double {
-        return poundToKilogram.baseUnitValue(fromValue: kilogram)
-    }
-
-    static func toKilogram(pound: Double) -> Double {
-        return poundToKilogram.value(fromBaseUnitValue: pound)
-    }
-
-    static let inchToCm = UnitConverterLinear(coefficient: 2.54)
-
-    static func toInch(cm: Double) -> Double {
-        return inchToCm.baseUnitValue(fromValue: cm)
-    }
-
-    static func toCm(inch: Double) -> Double {
-        return inchToCm.value(fromBaseUnitValue: inch)
-    }
-
-    static func length(_ value:Double, from:ScaleUnit, to:ScaleUnit) -> Double {
-        if from == .Kilogram && to == .Pound {
-            return toInch(cm: value)
-        }
-        if from == .Pound && to == .Kilogram {
-            return toCm(inch: value)
-        }
-        return value
-    }
-}
-
-enum Gender: String {
-    case Male = "Male"
-    case Female = "Female"
-    case Unknown = "Unknown"
-}
-
-enum DisplayedScene {
-    case Onboard
-    case Scale
-}
-
-enum GrantState {
-    case Init
-    case Granted
-    case Denied
-    case Off
-}
-
-class SimpleDate: DateFormatter {
-    override init() {
-        super.init()
-        self.dateFormat = "yyyy-MM-dd"
-    }
-
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-    }
-
-    static func makeDate(year: UInt16, month: UInt8, day: UInt8,
-                         hour: UInt8, minute: UInt8, second: UInt8) -> Date {
-        let calendar = Calendar(identifier: .gregorian)
-        let components = DateComponents(year: Int(year), month: Int(month), day: Int(day),
-                                        hour: Int(hour), minute: Int(minute), second: Int(second))
-        return calendar.date(from: components)!
-    }
-
-    static func makeComponent(date: Date) -> DateComponents {
-        let calendar = Calendar(identifier: .gregorian)
-        return calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: date)
-    }
-
-    static func age(from: Date) -> UInt8 {
-        let calendar = Calendar(identifier: .gregorian)
-        let now = Date()
-        let ageComponents = calendar.dateComponents([.year], from: from, to: now)
-        return UInt8(ageComponents.year!)
-    }
-
-    static let date19700101: Date = SimpleDate().date(from: "1970-01-01")!
-}
-
-
-class SimpleDateTime: DateFormatter {
-    override init() {
-        super.init()
-        self.dateFormat = "yyyy-MM-dd HH:mm:ss"
-    }
-
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
     }
 }

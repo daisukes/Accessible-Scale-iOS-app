@@ -94,7 +94,7 @@ struct ContentView: View {
                 for offset in offsets {
                     modelData.delete(data: sorted[offset])
                 }
-                modelData.save()
+                modelData.saveCoreData()
             }
         }
     }

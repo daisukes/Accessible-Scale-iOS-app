@@ -23,7 +23,7 @@ struct OnboardView7: View {
                 .padding()
 
             Button(action: {
-                authorizeHealthkit()
+                modelData.authorizeHealthkit()
             }) {
                 switch(modelData.healthKitState) {
                 case .Init:
@@ -51,32 +51,6 @@ struct OnboardView7: View {
         }
         .onAppear() {
         }
-    }
-
-    func authorizeHealthkit() {
-
-            if HKHealthStore.isHealthDataAvailable() {
-                // Add code to use HealthKit here.
-                let healthStore = HKHealthStore()
-
-                // All information?
-                let allTypes = Set([HKObjectType.quantityType(forIdentifier: .bodyMass)!,
-                                    HKObjectType.quantityType(forIdentifier: .bodyFatPercentage)!])
-
-                // request to authorize write acess
-                healthStore.requestAuthorization(toShare: allTypes, read: allTypes) { (success, error) in
-                    // todo
-                    // this returns sucess even if the user denied
-
-                    DispatchQueue.main.async {
-                        modelData.healthKitState = success ? .Granted : .Denied
-                    }
-                    if !success {
-                        
-                    }
-                }
-            }
-
     }
 }
 

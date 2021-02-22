@@ -58,12 +58,10 @@ struct AccessibleScaleApp: App, ScaleDelegate {
             break
         case .Connected:
             notifyConnected()
-            modelData.connected = true
-            modelData.measurement = Measurement()
-            modelData.lastWeightNotify = 0
+            modelData.scaleConnected()
             break
         case .NotConnected:
-            modelData.disconnected()
+            modelData.scaleDisconnected()
             break
         case .WeightMeasured:
             notifyMeasurement(state: state)
