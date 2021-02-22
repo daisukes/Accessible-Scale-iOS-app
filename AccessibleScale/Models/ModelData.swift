@@ -134,6 +134,7 @@ final class ModelData: ObservableObject {
     }
 
     init(viewContext: NSManagedObjectContext) {
+        print("initialize viewContext \(viewContext)")
         self.viewContext = viewContext
 
         if let userHelper = self.userHelper {
@@ -186,6 +187,11 @@ final class ModelData: ObservableObject {
             bodyMeasurementData!.timestamp = now
         }
         return bodyMeasurementData
+    }
+
+    func disconnected() {
+        connected = false
+        bodyMeasurementData = nil
     }
 
     func updated(weight: GATTWeightMeasurement) {
@@ -316,16 +322,21 @@ final class ModelData: ObservableObject {
         self.viewContext.delete(data)
     }
 
-    func updateCoreData(state: Scale.State) {
+    private let bodyMassType = HKObjectType.quantityType(forIdentifier: .bodyMass)!
+    private let fatPercentageType = HKObjectType.quantityType(forIdentifier: .bodyFatPercentage)!
+
+    func updateCoreDataAndHealthKit(state: Scale.State) {
         guard measurement.weight ?? 0 > 0 else { return }
         guard let bodyMeasuremnt = prepareBodyMeasurement() else { return }
+        let healthStore = HKHealthStore()
+        let now = Date()
 
         if let user = user {
             bodyMeasuremnt.user = user
+            bodyMeasuremnt.unit = unit.rawValue
         }
 
         if state == .WeightMeasured {
-            bodyMeasuremnt.unit = unit.rawValue
             bodyMeasuremnt.weight = measurement.weight(inUnit: unit)
             bodyMeasuremnt.body_mass_index = measurement.bodyMassIndex ?? 0
         }
@@ -341,41 +352,22 @@ final class ModelData: ObservableObject {
             bodyMeasuremnt.soft_lean_mass = measurement.softLeanMass(inUnit: unit)
         }
 
-        save()
-    }
-
-    // MARK: Apple Healthkit
-
-    private let bodyMassType = HKObjectType.quantityType(forIdentifier: .bodyMass)!
-    private let fatPercentageType = HKObjectType.quantityType(forIdentifier: .bodyFatPercentage)!
-
-    func updateHealthKit(state: Scale.State) {
-        guard measurement.weight ?? 0 > 0 else { return }
-        guard let bodyMeasuremnt = prepareBodyMeasurement() else { return }
-
-        if HKHealthStore.isHealthDataAvailable() {
-            // Add code to use HealthKit here.
-            let healthStore = HKHealthStore()
-            let now = Date()
-
-            if state == .WeightMeasured {
-                let status = healthStore.authorizationStatus(for: bodyMassType)
-                if status == .sharingAuthorized {
-                    let hkunit: HKUnit = (unit == .Kilogram) ? .gram() : .pound()
-                    let value = measurement.weight(inUnit: unit) * (unit == .Kilogram ? 1000 : 1)
-                    let weight = HKQuantity(unit: hkunit, doubleValue: Double(value))
-                    let sample = HKQuantitySample(type: bodyMassType, quantity: weight, start: now, end: now)
-                    healthStore.save(sample) { (success, error) in
-                    }
-
-                    let entry = StoredEntry(context: viewContext)
-                    entry.uuid = sample.uuid
-                    entry.measurement = bodyMeasuremnt
-                    save()
+        // do not save if .CompositeMeasured comes first
+        if bodyMeasuremnt.weight > 0 {
+            let status = healthStore.authorizationStatus(for: bodyMassType)
+            if status == .sharingAuthorized {
+                let hkunit: HKUnit = (unit == .Kilogram) ? .gram() : .pound()
+                let value = measurement.weight(inUnit: unit) * (unit == .Kilogram ? 1000 : 1)
+                let weight = HKQuantity(unit: hkunit, doubleValue: Double(value))
+                let sample = HKQuantitySample(type: bodyMassType, quantity: weight, start: now, end: now)
+                healthStore.save(sample) { (success, error) in
                 }
-            }
 
-            if state == .CompositeMeasured {
+                let entry = StoredEntry(context: viewContext)
+                entry.uuid = sample.uuid
+                entry.measurement = bodyMeasuremnt
+            }
+            if bodyMeasuremnt.fat_percentage > 0 {
                 let status = healthStore.authorizationStatus(for: fatPercentageType)
                 if status == .sharingAuthorized {
                     let unit: HKUnit = .percent()
@@ -387,10 +379,11 @@ final class ModelData: ObservableObject {
                     let entry = StoredEntry(context: viewContext)
                     entry.uuid = sample.uuid
                     entry.measurement = bodyMeasuremnt
-                    save()
                 }
             }
         }
+
+        save()
     }
 
 }
