@@ -22,24 +22,26 @@ struct ContentView: View {
                 Spacer().frame(width: 50.0)
                 Text(String(format: "%05.2f", modelData.weightInUserUnit()))
                     .font(.system(size: 60))
+                    .accessibility(label: Text(modelData.localizedWeightString()))
                 Text(modelData.unit.label())
                     .font(.largeTitle)
                     .frame(width: 50.0)
                     .fixedSize(horizontal: true, vertical: false)
+                    .accessibility(hidden: true)
             }
-            .accessibilityLabel(modelData.localizedWeightString())
             .padding()
             
             HStack {
                 Spacer().frame(width: 50.0)
                 Text(String(format: "%05.2f", modelData.measurement.fatPercentage ?? 0))
                     .font(.system(size: 60))
+                    .accessibilityLabel(modelData.localizedFatString())
                 Text("%")
                     .font(.largeTitle)
                     .frame(width: 50.0)
                     .fixedSize(horizontal: true, vertical: false)
+                    .accessibility(hidden: true)
             }
-            .accessibilityLabel(modelData.localizedWeightString())
             .padding()
             
             Text("History")
@@ -66,7 +68,14 @@ struct ContentView: View {
             ToolbarItem(placement: .navigationBarTrailing) {
                 NavigationLink (destination: UserDetail()
                                     .environmentObject(modelData)) {
-                    Label("Your account", systemImage: "person.crop.circle")
+                    HStack {
+                        Text("")
+                            .accessibilityHidden(true)
+
+                        Image(systemName: "gearshape")
+                            .accessibilityElement()
+                            .accessibilityLabel("User settings")
+                    }
                 }
             }
 
