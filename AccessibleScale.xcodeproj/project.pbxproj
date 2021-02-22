@@ -10,6 +10,7 @@
 		3023526D25E0B3650002A683 /* GATTCustom.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3023526C25E0B3650002A683 /* GATTCustom.swift */; };
 		3023529425E2906E0002A683 /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3023529325E2906E0002A683 /* HealthKit.framework */; };
 		3023529925E291140002A683 /* OnboardView7.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3023529825E291140002A683 /* OnboardView7.swift */; };
+		302352B125E44C850002A683 /* BodyMeasurement+Unit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 302352B025E44C850002A683 /* BodyMeasurement+Unit.swift */; };
 		304C55E025DC695A00C765D8 /* AccessibleScale.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 304C55DE25DC695A00C765D8 /* AccessibleScale.xcdatamodeld */; };
 		304C562425DC776800C765D8 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304C562325DC776800C765D8 /* Persistence.swift */; };
 		304C563925DCC3E800C765D8 /* UserDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304C563825DCC3E800C765D8 /* UserDetail.swift */; };
@@ -60,6 +61,7 @@
 		3023529125E2906E0002A683 /* AccessibleScale.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AccessibleScale.entitlements; sourceTree = "<group>"; };
 		3023529325E2906E0002A683 /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = System/Library/Frameworks/HealthKit.framework; sourceTree = SDKROOT; };
 		3023529825E291140002A683 /* OnboardView7.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardView7.swift; sourceTree = "<group>"; };
+		302352B025E44C850002A683 /* BodyMeasurement+Unit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BodyMeasurement+Unit.swift"; sourceTree = "<group>"; };
 		304C55DF25DC695A00C765D8 /* Scale.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Scale.xcdatamodel; sourceTree = "<group>"; };
 		304C562325DC776800C765D8 /* Persistence.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
 		304C563825DCC3E800C765D8 /* UserDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDetail.swift; sourceTree = "<group>"; };
@@ -132,6 +134,7 @@
 			isa = PBXGroup;
 			children = (
 				7EDFB9B925DA128A008179BE /* ModelData.swift */,
+				302352B025E44C850002A683 /* BodyMeasurement+Unit.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -381,6 +384,7 @@
 				3023529925E291140002A683 /* OnboardView7.swift in Sources */,
 				304C564325DCE5DB00C765D8 /* DataHelper.swift in Sources */,
 				304C563925DCC3E800C765D8 /* UserDetail.swift in Sources */,
+				302352B125E44C850002A683 /* BodyMeasurement+Unit.swift in Sources */,
 				304C55E025DC695A00C765D8 /* AccessibleScale.xcdatamodeld in Sources */,
 				7EDFB9CD25DA1B77008179BE /* Extension.swift in Sources */,
 				304C563E25DCD8D600C765D8 /* BodyMeasurementRow.swift in Sources */,
