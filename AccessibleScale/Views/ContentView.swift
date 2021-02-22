@@ -10,14 +10,11 @@ import CoreData
 
 struct ContentView: View {
     @EnvironmentObject var modelData: ModelData
-    
-    @State private var measureFat = false
 
     let scale = Scale.shared
     
     var body: some View {
-        let users = modelData.users()
-        return VStack {
+        VStack {
             Label("Connected", systemImage: "dot.radiowaves.left.and.right")
                 .isHidden(!modelData.connected)
 
@@ -50,13 +47,20 @@ struct ContentView: View {
                 .padding()
                 .font(.headline)
 
-            if let measurements = users[0].measurements?.allObjects as? [BodyMeasurement] {
-                List (measurements.sorted { $0.timestamp! > $1.timestamp! }) { measurement in
-                    NavigationLink (destination: MeasurementDetail(measurement: measurement)) {
-                        BodyMeasurementRow(measurement: measurement)
+            if let user = modelData.user {
+                if let measurements = user.measurements?.allObjects as? [BodyMeasurement] {
+                    List {
+                        ForEach (measurements.sorted { $0.timestamp! > $1.timestamp! }, id: \.self) { measurement in
+                            NavigationLink (destination: MeasurementDetail(measurement: measurement)
+                                                .environmentObject(modelData)) {
+                                BodyMeasurementRow(measurement: measurement)
+                                    .environmentObject(modelData)
+                            }
+                        }
+                        .onDelete(perform: delete)
                     }
+                    .listStyle(PlainListStyle())
                 }
-                .listStyle(PlainListStyle())
             }
         }
         .navigationBarTitle("", displayMode: .inline)
@@ -78,8 +82,22 @@ struct ContentView: View {
              */
         }
         .onAppear {
-            if modelData.users().count > 0 {
-                scale.requestAuthorization(user: users[0], andScan: true)
+            if let user = modelData.user {
+                scale.requestAuthorization(user: user, andScan: true)
+            }
+        }
+    }
+
+    func delete(at offsets: IndexSet) {
+        if let user = modelData.user {
+            if let measurements = user.measurements?.allObjects as? [BodyMeasurement] {
+                let sorted = measurements.sorted { $0.timestamp! > $1.timestamp! }
+
+                for offset in offsets {
+                    sorted[offset].user = nil
+                    modelData.delete(data: sorted[offset])
+                }
+                modelData.save()
             }
         }
     }

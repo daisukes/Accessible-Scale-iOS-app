@@ -11,6 +11,7 @@ import CoreData
 import CoreBluetooth
 import UserNotifications
 import Combine
+import HealthKit
 
 struct Measurement {
     var measurementUnit: ScaleUnit?
@@ -27,28 +28,70 @@ struct Measurement {
 }
 
 extension Measurement {
-    func value(forKey: String, inUnit: ScaleUnit) -> Double {
-        let mirror = Mirror(reflecting: self)
+    func weight(inUnit: ScaleUnit) -> Double {
+        return value(weight ?? 0, inUnit: inUnit)
+    }
+    func muscleMass(inUnit: ScaleUnit) -> Double {
+        return value(muscleMass ?? 0, inUnit: inUnit)
+    }
+    func fatFreeMass(inUnit: ScaleUnit) -> Double {
+        return value(fatFreeMass ?? 0, inUnit: inUnit)
+    }
+    func softLeanMass(inUnit: ScaleUnit) -> Double {
+        return value(softLeanMass ?? 0, inUnit: inUnit)
+    }
+    func bodyWaterMass(inUnit: ScaleUnit) -> Double {
+        return value(bodyWaterMass ?? 0, inUnit: inUnit)
+    }
 
-        for child in mirror.children {
-            if child.label == forKey {
-                if let value = child.value as? Double {
-                    if measurementUnit != inUnit {
-                        if inUnit == .Kilogram {
-                            return ScaleUnit.toKilogram(pound: value)
-                        }
-                        if inUnit == .Pound{
-                            return ScaleUnit.toPound(kilogram: value)
-                        }
-                    } else {
-                        return value
+    func value(_ value: Double, inUnit: ScaleUnit) -> Double {
+        if measurementUnit != inUnit {
+            if inUnit == .Kilogram {
+                return ScaleUnit.toKilogram(pound: value)
+            }
+            if inUnit == .Pound{
+                return ScaleUnit.toPound(kilogram: value)
+            }
+        }
+        return value
+    }
+}
+
+extension BodyMeasurement{
+
+    func weight(inUnit: ScaleUnit) -> Double {
+        return value(weight, inUnit: inUnit)
+    }
+    func muscle_mass(inUnit: ScaleUnit) -> Double {
+        return value(muscle_mass, inUnit: inUnit)
+    }
+    func fat_free_mass(inUnit: ScaleUnit) -> Double {
+        return value(fat_free_mass, inUnit: inUnit)
+    }
+    func soft_lean_mass(inUnit: ScaleUnit) -> Double {
+        return value(soft_lean_mass, inUnit: inUnit)
+    }
+    func body_water_mass(inUnit: ScaleUnit) -> Double {
+        return value(body_water_mass, inUnit: inUnit)
+    }
+
+    func value(_ value: Double, inUnit: ScaleUnit) -> Double {
+        if let raw_unit = unit {
+            if let base_unit = ScaleUnit(rawValue: raw_unit) {
+                if base_unit != inUnit {
+                    if inUnit == .Kilogram {
+                        return ScaleUnit.toKilogram(pound: value)
+                    }
+                    if inUnit == .Pound{
+                        return ScaleUnit.toPound(kilogram: value)
                     }
                 }
             }
         }
-        return 0
+        return value
     }
 }
+
 
 final class ModelData: ObservableObject {
     @Published var bluetoothState: CBManagerState = .unknown
@@ -64,6 +107,8 @@ final class ModelData: ObservableObject {
     @Published var gender: Gender = Gender.Female
 
     @Published var measurement = Measurement()
+    @Published var user: User?
+    @Published var lastUpdated: Date = Date()
 
     @Published var displayedScene: DisplayedScene = .Onboard
 
@@ -90,12 +135,16 @@ final class ModelData: ObservableObject {
 
     init(viewContext: NSManagedObjectContext) {
         self.viewContext = viewContext
-        checkUser()
+
+        if let userHelper = self.userHelper {
+            displayedScene = userHelper.count() > 0 ? .Scale : .Onboard
+        }
         if let user = mainUser() {
             unit = ScaleUnit(rawValue: user.unit!)!
             height = Int(user.height)
             date_of_birth = user.date_of_birth!
             gender = Gender(rawValue: user.gender!)!
+            self.user = user
         }
 
         heightUnitChanged
@@ -105,7 +154,7 @@ final class ModelData: ObservableObject {
     }
 
     func weightInUserUnit() -> Double {
-        measurement.value(forKey: "weight", inUnit: unit)
+        measurement.weight(inUnit: unit)
     }
 
     func localizedWeightString() -> String {
@@ -141,13 +190,8 @@ final class ModelData: ObservableObject {
 
     // MARK: User related functions
 
-    func checkUser() {
-        if let userHelper = self.userHelper {
-            displayedScene = userHelper.count() > 0 ? .Scale : .Onboard
-        }
-    }
 
-    func users() -> [User] {
+    private func users() -> [User] {
         guard let userHelper = userHelper else {
             return []
         }
@@ -158,7 +202,7 @@ final class ModelData: ObservableObject {
         return []
     }
 
-    func mainUser() -> User? {
+    private func mainUser() -> User? {
         let users = self.users()
         if users.count > 0 {
             return users[0]
@@ -207,18 +251,28 @@ final class ModelData: ObservableObject {
         }
         if changed {
             user.written = false
-            do {
-                print("saving change")
-                try viewContext.save()
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nsError = error as NSError
-                print("Unresolved error \(nsError), \(nsError.userInfo)")
-            }
+            save()
         }
     }
 
+    // MARK: CoreData
+
+    func save() {
+        do {
+            print("saving change")
+            try viewContext.save()
+        } catch {
+            // Replace this implementation with code to handle the error appropriately.
+            // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
+            let nsError = error as NSError
+            print("Unresolved error \(nsError), \(nsError.userInfo)")
+        }
+        lastUpdated = Date()
+    }
+
+    func delete(data: BodyMeasurement) {
+        self.viewContext.delete(data)
+    }
 }
 
 // MARK: Enums and Utilities

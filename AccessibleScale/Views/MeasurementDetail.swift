@@ -9,31 +9,33 @@ import SwiftUI
 
 struct MeasurementDetail: View {
 
-    var measurement: BodyMeasurement
+    @EnvironmentObject var modelData: ModelData
+
+    @State var measurement: BodyMeasurement
     
     var body: some View {
-        let label = ScaleUnit(rawValue: measurement.unit!)!.label()
+        let unit = modelData.unit
 
-        return VStack {
-            HStack {
-                Text(SimpleDateTime().string(from: measurement.timestamp!))
+        ScrollView {
+            VStack {
+                HStack {
+                    Text(SimpleDateTime().string(from: measurement.timestamp ?? Date()))
+                }
+                HStack {
+                    Text("Weight")
+                    Spacer()
+                    Text(String(format: "%.2f %@", measurement.weight(inUnit: unit), unit.label()))
+                }
+                .padding()
+
+                optionalPart
             }
-            HStack {
-                Text("Weight")
-                Spacer()
-                Text(String(format: "%.2f %@", measurement.weight, label))
-            }
-            .padding()
-
-            optionalPart
-
-            Spacer()
         }
         .padding()
     }
 
     var optionalPart: some View {
-        let label = ScaleUnit(rawValue: measurement.unit!)!.label()
+        let unit = modelData.unit
 
         return VStack {
             if measurement.fat_percentage > 0 {
@@ -67,7 +69,7 @@ struct MeasurementDetail: View {
                 HStack {
                     Text("Muscle Mass")
                     Spacer()
-                    Text(String(format:"%.2f %@", measurement.muscle_mass, label ))
+                    Text(String(format:"%.2f %@", measurement.muscle_mass(inUnit: unit), unit.label() ))
                 }
                 .padding()
             }
@@ -85,7 +87,7 @@ struct MeasurementDetail: View {
                 HStack {
                     Text("Fat Free Mass")
                     Spacer()
-                    Text(String(format:"%.2f %@", measurement.fat_free_mass, label ))
+                    Text(String(format:"%.2f %@", measurement.fat_free_mass(inUnit: unit), unit.label() ))
                 }
                 .padding()
             }
@@ -94,7 +96,7 @@ struct MeasurementDetail: View {
                 HStack {
                     Text("Soft Lean Mass")
                     Spacer()
-                    Text(String(format:"%.2f %@", measurement.soft_lean_mass, label ))
+                    Text(String(format:"%.2f %@", measurement.soft_lean_mass(inUnit: unit), unit.label() ))
                 }
                 .padding()
             }
@@ -103,7 +105,7 @@ struct MeasurementDetail: View {
                 HStack {
                     Text("Body Water Mass")
                     Spacer()
-                    Text(String(format:"%.2f %@", measurement.body_water_mass, label ))
+                    Text(String(format:"%.2f %@", measurement.body_water_mass(inUnit: unit), unit.label() ))
                 }
                 .padding()
             }
@@ -122,11 +124,14 @@ struct MeasurementDetail: View {
 
 struct MeasurementDetail_Previews: PreviewProvider {
     static var previews: some View {
+        let modelData = ModelData(viewContext: PersistenceController.preview.container.viewContext)
+        //modelData.unit = ScaleUnit.Pound
         let ctx = PersistenceController.preview.container.viewContext
 
         let testData = DataHelper(context: ctx, entityName: "BodyMeasurement")
         let items:[BodyMeasurement] = try! testData.getRows(count: 2)
 
-        MeasurementDetail(measurement: items[0])
+        return MeasurementDetail(measurement: items[0])
+            .environmentObject(modelData)
     }
 }
