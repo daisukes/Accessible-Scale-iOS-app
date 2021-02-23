@@ -141,10 +141,10 @@ final class ModelData: ObservableObject {
 
     func updated(bodyComposition: GATTBodyCompositionMeasurement) {
         measurement.fatPercentage = bodyComposition.fatPercentage
-        measurement.basalMetabolism = bodyComposition.basalMetabolism.map{Int($0)}
+        measurement.basalMetabolism = bodyComposition.basalMetabolism
         measurement.bodyWaterMass = bodyComposition.bodyWaterMass
         measurement.fatFreeMass = bodyComposition.fatFreeMass
-        measurement.impedance = bodyComposition.impedance.map{Int($0)}
+        measurement.impedance = bodyComposition.impedance
         measurement.muscleMass = bodyComposition.muscleMass
         measurement.musclePercentage = bodyComposition.musclePercentage
         measurement.softLeanMass = bodyComposition.softLeanMass
@@ -242,7 +242,7 @@ final class ModelData: ObservableObject {
                 if let uuid = entry.uuid {
                     let predicate = HKQuery.predicateForObject(with: uuid)
 
-                    for type in [bodyMassType, fatPercentageType] {
+                    for type in allHKTypes() {
                         let query = HKSampleQuery(sampleType: type, predicate: predicate, limit: 1, sortDescriptors: nil) { (query, samples, error) in
                             if let samples = samples {
                                 for sample in samples {
@@ -261,14 +261,33 @@ final class ModelData: ObservableObject {
         self.viewContext.delete(data)
     }
 
-    private let bodyMassType = HKObjectType.quantityType(forIdentifier: .bodyMass)!
-    private let fatPercentageType = HKObjectType.quantityType(forIdentifier: .bodyFatPercentage)!
+    struct Mapping {
+        var typeIdentifier: MeasurementTypeIdentifier
+        var hkunit: HKUnit
+    }
+
+    private let dataMapping: [HKQuantityTypeIdentifier: Mapping] =
+        [
+            .bodyMass: Mapping(typeIdentifier: .weight, hkunit: .gram()),
+            .bodyFatPercentage: Mapping(typeIdentifier: .fatPercentage, hkunit: .percent()),
+            // this should not be synch with Apple Health, because this value estimates basal energy for a day
+            // but Apple Health assumes that the value is a for a short time frame, usually provided by phone or watch
+            //.basalEnergyBurned: Mapping(typeIdentifier: .basalMetabolism, hkunit: .kilocalorie()),
+            .bodyMassIndex: Mapping(typeIdentifier: .bodyMassIndex, hkunit: .count()),
+            .leanBodyMass: Mapping(typeIdentifier: .fatFreeMass, hkunit: .gram())
+        ]
+
+    private func allHKTypes() -> Set<HKSampleType> {
+        Set(dataMapping.map { (key, value) -> HKSampleType in
+            HKObjectType.quantityType(forIdentifier: key)!
+        })
+    }
 
     func authorizeHealthkit() {
         if HKHealthStore.isHealthDataAvailable() {
             let healthStore = HKHealthStore()
 
-            let allTypes = Set([bodyMassType, fatPercentageType])
+            let allTypes = allHKTypes()
 
             healthStore.requestAuthorization(toShare: allTypes, read: allTypes) { (success, error) in
                 // todo
@@ -315,31 +334,22 @@ final class ModelData: ObservableObject {
         if bodyMeasuremnt.weight > 0 {
             saveCoreData()
 
-            let status = healthStore.authorizationStatus(for: bodyMassType)
-            if status == .sharingAuthorized {
-                let hkunit: HKUnit = (unit == .Kilogram) ? .gram() : .pound()
-                let value = measurement.weight(inUnit: unit) * (unit == .Kilogram ? 1000 : 1)
-                let weight = HKQuantity(unit: hkunit, doubleValue: Double(value))
-                let sample = HKQuantitySample(type: bodyMassType, quantity: weight, start: now, end: now)
-                healthStore.save(sample) { (success, error) in
-                }
-
-                let entry = StoredEntry(context: viewContext)
-                entry.uuid = sample.uuid
-                entry.measurement = bodyMeasuremnt
-            }
-            if bodyMeasuremnt.fat_percentage > 0 {
-                let status = healthStore.authorizationStatus(for: fatPercentageType)
+            dataMapping.forEach { identifier, mapping in
+                let type = HKObjectType.quantityType(forIdentifier: identifier)!
+                let status = healthStore.authorizationStatus(for: type)
                 if status == .sharingAuthorized {
-                    let unit: HKUnit = .percent()
-                    let value = measurement.fatPercentage! / 100
-                    let weight = HKQuantity(unit: unit, doubleValue: Double(value))
-                    let sample = HKQuantitySample(type: fatPercentageType, quantity: weight, start: now, end: now)
-                    healthStore.save(sample) { (success, error) in
+                    let hkunit = mapping.hkunit
+                    let value = measurement.value(forKey: mapping.typeIdentifier, inHKUnit: hkunit)
+                    if value > 0 {
+                        let quantity = HKQuantity(unit: hkunit, doubleValue: value)
+                        let sample = HKQuantitySample(type: type, quantity: quantity, start: now, end: now)
+                        healthStore.save(sample) { (success, error) in
+                        }
+
+                        let entry = StoredEntry(context: viewContext)
+                        entry.uuid = sample.uuid
+                        entry.measurement = bodyMeasuremnt
                     }
-                    let entry = StoredEntry(context: viewContext)
-                    entry.uuid = sample.uuid
-                    entry.measurement = bodyMeasuremnt
                 }
             }
         }

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import HealthKit
 
 enum ScaleUnit: String {
     case Kilogram = "kilo grams"
@@ -51,18 +52,31 @@ enum ScaleUnit: String {
     }
 }
 
+enum MeasurementTypeIdentifier: String {
+    case weight = "weight"
+    case fatPercentage = "fatPercentage"
+    case bodyMassIndex = "bodyMassIndex"
+    case basalMetabolism = "basalMetabolism"
+    case musclePercentage = "musclePercentage"
+    case muscleMass = "muscleMass"
+    case fatFreeMass = "fatFreeMass"
+    case softLeanMass = "softLeanMass"
+    case bodyWaterMass = "bodyWaterMass"
+    case impedance = "impedance"
+}
+
 struct Measurement {
     var measurementUnit: ScaleUnit?
     var weight: Double?
     var fatPercentage: Double?
     var bodyMassIndex: Double?
-    var basalMetabolism: Int?
+    var basalMetabolism: Double?
     var musclePercentage: Double?
     var muscleMass: Double?
     var fatFreeMass: Double?
     var softLeanMass: Double?
     var bodyWaterMass: Double?
-    var impedance: Int?
+    var impedance: Double?
 }
 
 extension Measurement {
@@ -92,6 +106,31 @@ extension Measurement {
             }
         }
         return value
+    }
+
+    func value(_ value: Double, inHKUnit: HKUnit) -> Double {
+        switch(inHKUnit) {
+        case .gram():
+            return self.value(value, inUnit: .Kilogram) * 1000
+        case .percent():
+            return value / 100
+        default:
+            return value
+        }
+    }
+
+    func value(forKey: MeasurementTypeIdentifier, inHKUnit: HKUnit) -> Double {
+        let mirror = Mirror(reflecting: self)
+
+        for child in mirror.children {
+            if forKey.rawValue == child.label {
+                if let childValue = child.value as? Double {
+                    return self.value(childValue, inHKUnit: inHKUnit)
+                }
+            }
+        }
+        // no value
+        return 0
     }
 }
 
