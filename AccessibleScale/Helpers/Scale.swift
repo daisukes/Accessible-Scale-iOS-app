@@ -225,18 +225,20 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         guard let user = self.user else { return }
         let now = Date().timeIntervalSince1970
 
-        os_log("execute step %d-%d", log:.connection, index, lastIndex)
         lastIndex = index
         switch(index) {
         case 1:
             startTime = now
+            os_log("#1 custom char notify", log:.connection)
             scale.setNotifyValue(true, for: chars[BODY_COMPOSITION_CUSTOM1_CHAR_UUID]!)
             break
         case 2:
+            os_log("#2 custom unit write", log:.connection)
             scale.writeValue(GATTCustomScaleUnit(unit: ScaleUnit(rawValue: user.unit!)!).compose(),
                              for: chars[BODY_COMPOSITION_CUSTOM2_CHAR_UUID]!, type: .withResponse)
             break
         case 3:
+            os_log("#3 user control point notify", log:.connection)
             scale.setNotifyValue(true, for: chars[USER_CONTROL_POINT_CHAR_UUID]!)
             break
         case 4:
@@ -249,42 +251,46 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
 
             } else {
                 if user.userid == 0 {
+                    os_log("#4 register an user", log:.connection)
                     user.passcode = Int16.random(in: 0...9999)
                     let data = GATTUserControlPoint.registerNewUser(passcode: UInt16(user.passcode)).compose()
                     os_log("%@", log:.data, data.hexEncodedString(options: .upperCase))
                     scale.writeValue(data, for: chars[USER_CONTROL_POINT_CHAR_UUID]!, type: .withResponse)
-                    index += 1
                 } else {
-                    index += 2
+                    os_log("#4 user is already registered", log:.connection)
+                    index += 1
                 }
             }
         case 5:
-            os_log("Waiting response", log:.connection)
-            break
-        case 6:
+            os_log("#5 user control point consent write", log:.connection)
             let consent = GATTUserControlPoint.consent(userID: UInt8(user.userid), passcode: UInt16(user.passcode))
             scale.writeValue(consent.compose(), for: chars[USER_CONTROL_POINT_CHAR_UUID]!, type: .withResponse)
 
             if user.written == false {
                 // Gender
+                os_log("#5-1 gender write", log:.connection)
                 let gender = Gender(rawValue: user.gender!)
                 let gattgender = GATTGender.init(gender: (gender == .Male) ? GATTGender.Gender.Male : GATTGender.Gender.Female)
                 scale.writeValue(gattgender.compose(), for: chars[USER_GENDER_CHAR_UUID]!, type: .withResponse)
 
                 // Height
+                os_log("#5-2 height write", log:.connection)
                 let heightFactor = (ScaleUnit(rawValue: user.unit!)! == .Kilogram) ? 1 : Float(2.54)
                 let gattheight = GATTHeight.init(height: Float(user.height) * heightFactor)
                 scale.writeValue(gattheight.compose(), for: chars[USER_HEIGHT_CHAR_UUID]!, type: .withResponse)
 
                 // Date of Birth
+                os_log("#5-3 date of birth write", log:.connection)
                 let gattdob = GATTDateOfBirth.init(date: user.date_of_birth!)
                 scale.writeValue(gattdob.compose(), for: chars[USER_DATE_OF_BIRTH_CHAR_UUID]!, type: .withResponse)
 
                 // Age
+                os_log("#5-4 age write", log:.connection)
                 let gattage = GATTAge.init(date_of_birth: user.date_of_birth!)
                 scale.writeValue(gattage.compose(), for: chars[USER_AGE_CHAR_UUID]!, type: .withResponse)
 
                 // Athlete Mode
+                os_log("#5-5 athlete mode write", log:.connection)
                 let gattathlete = GATTCustomAthleteMode.init(mode: GATTCustomAthleteMode.Mode.Normal)
                 scale.writeValue(gattathlete.compose(), for: chars[USER_CUSTOM_ATHLETE_MODE_UUID]!, type: .withResponse)
 
@@ -296,14 +302,16 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             }
 
             break
-        case 7:
+        case 6:
+            os_log("#6 body composition measurement notify", log:.connection)
             scale.setNotifyValue(true, for: chars[BODY_COMPOSITION_MEASUREMENT_CHAR_UUID]!)
             break
-        case 8:
+        case 7:
+            os_log("#7 weight measurement notify", log:.connection)
             scale.setNotifyValue(true, for: chars[WEIGHT_MEASUREMENT_CHAR_UUID]!)
             break
         default:
-            os_log("timer stop, %.2f sec", log:.connection, now - startTime)
+            os_log("Connection procedure complete in %.2f sec", log:.connection, now - startTime)
             connected = true
             delegate.updated(state: .Connected)
             processTimer?.invalidate()
