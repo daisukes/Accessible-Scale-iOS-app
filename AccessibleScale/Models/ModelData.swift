@@ -92,7 +92,7 @@ final class ModelData: ObservableObject {
 
     // TODO Localize
     func localizedWeightString() -> String {
-        let weight = measurement.weight ?? 0
+        let weight = measurement.weight(inUnit: unit)
         return String(format: "%.1f %@", weight, unit.rawValue)
     }
 
