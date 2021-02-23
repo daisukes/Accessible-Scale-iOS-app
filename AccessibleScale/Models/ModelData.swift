@@ -104,33 +104,23 @@ final class ModelData: ObservableObject {
         return String(format: "%@, %@", localizedWeightString(), localizedFatString())
     }
 
-    // TODO better way to reset BodyBeasurement instance
     func prepareBodyMeasurement() -> BodyMeasurement? {
-        let now = Date()
-        if let bodyMeasurement = self.bodyMeasurementData {
-            if let timestamp = bodyMeasurement.timestamp {
-                if now.timeIntervalSince(timestamp) > 10 {
-                    self.bodyMeasurementData = nil
-                }
-            }
-        }
-
-        if self.bodyMeasurementData == nil {
-            bodyMeasurementData = BodyMeasurement(context: self.viewContext)
-            bodyMeasurementData!.timestamp = now
-        }
+        let bodyMeasurementData = BodyMeasurement(context: self.viewContext)
+        bodyMeasurementData.timestamp = Date()
         return bodyMeasurementData
     }
 
     func scaleConnected() {
+        print("Scale Connected")
         connected = true
-        measurement = Measurement()
         lastWeightNotify = 0
     }
 
     func scaleDisconnected() {
+        print("Scale Disconnected")
+        updateCoreDataAndHealthKit()
         connected = false
-        bodyMeasurementData = nil
+        measurement = Measurement()
     }
 
     func updated(weight: GATTWeightMeasurement) {
@@ -303,55 +293,52 @@ final class ModelData: ObservableObject {
         }
     }
 
-    func updateCoreDataAndHealthKit(state: Scale.State) {
+    func updateCoreDataAndHealthKit() {
         guard measurement.weight ?? 0 > 0 else { return }
-        guard let bodyMeasuremnt = prepareBodyMeasurement() else { return }
+        guard let user = user else { return }
+        guard let bodyMeasurement = prepareBodyMeasurement() else { return }
+
+        print("updateCoreData")
+
+        bodyMeasurement.user = user
+        bodyMeasurement.unit = unit.rawValue
+        bodyMeasurement.weight = measurement.weight(inUnit: unit)
+        bodyMeasurement.body_mass_index = measurement.bodyMassIndex ?? 0
+
+        bodyMeasurement.fat_percentage = measurement.fatPercentage ?? 0
+        bodyMeasurement.basal_metabolism = Int32(measurement.basalMetabolism ?? 0)
+        bodyMeasurement.body_water_mass = measurement.bodyWaterMass(inUnit: unit)
+        bodyMeasurement.fat_free_mass = measurement.fatFreeMass(inUnit: unit)
+        bodyMeasurement.impedance = Int32(measurement.impedance ?? 0)
+        bodyMeasurement.muscle_mass = measurement.muscleMass(inUnit: unit)
+        bodyMeasurement.muscle_percentage = measurement.musclePercentage ?? 0
+        bodyMeasurement.soft_lean_mass = measurement.softLeanMass(inUnit: unit)
+
         let healthStore = HKHealthStore()
         let now = Date()
 
-        if let user = user {
-            bodyMeasuremnt.user = user
-            bodyMeasuremnt.unit = unit.rawValue
-        }
-
-        if state == .WeightMeasured {
-            bodyMeasuremnt.weight = measurement.weight(inUnit: unit)
-            bodyMeasuremnt.body_mass_index = measurement.bodyMassIndex ?? 0
-        }
-
-        if state == .CompositeMeasured {
-            bodyMeasuremnt.fat_percentage = measurement.fatPercentage ?? 0
-            bodyMeasuremnt.basal_metabolism = Int32(measurement.basalMetabolism ?? 0)
-            bodyMeasuremnt.body_water_mass = measurement.bodyWaterMass(inUnit: unit)
-            bodyMeasuremnt.fat_free_mass = measurement.fatFreeMass(inUnit: unit)
-            bodyMeasuremnt.impedance = Int32(measurement.impedance ?? 0)
-            bodyMeasuremnt.muscle_mass = measurement.muscleMass(inUnit: unit)
-            bodyMeasuremnt.muscle_percentage = measurement.musclePercentage ?? 0
-            bodyMeasuremnt.soft_lean_mass = measurement.softLeanMass(inUnit: unit)
-        }
+        print("updateHealthKit")
 
         // do not save if .CompositeMeasured comes first
-        if bodyMeasuremnt.weight > 0 {
-            saveCoreData()
-
-            dataMapping.forEach { identifier, mapping in
-                let type = HKObjectType.quantityType(forIdentifier: identifier)!
-                let status = healthStore.authorizationStatus(for: type)
-                if status == .sharingAuthorized {
-                    let hkunit = mapping.hkunit
-                    let value = measurement.value(forKey: mapping.typeIdentifier, inHKUnit: hkunit)
-                    if value > 0 {
-                        let quantity = HKQuantity(unit: hkunit, doubleValue: value)
-                        let sample = HKQuantitySample(type: type, quantity: quantity, start: now, end: now)
-                        healthStore.save(sample) { (success, error) in
-                        }
-
-                        let entry = StoredEntry(context: viewContext)
-                        entry.uuid = sample.uuid
-                        entry.measurement = bodyMeasuremnt
+        dataMapping.forEach { identifier, mapping in
+            let type = HKObjectType.quantityType(forIdentifier: identifier)!
+            let status = healthStore.authorizationStatus(for: type)
+            if status == .sharingAuthorized {
+                let hkunit = mapping.hkunit
+                let value = measurement.value(forKey: mapping.typeIdentifier, inHKUnit: hkunit)
+                if value > 0 {
+                    let quantity = HKQuantity(unit: hkunit, doubleValue: value)
+                    let sample = HKQuantitySample(type: type, quantity: quantity, start: now, end: now)
+                    healthStore.save(sample) { (success, error) in
                     }
+
+                    let entry = StoredEntry(context: viewContext)
+                    entry.uuid = sample.uuid
+                    entry.measurement = bodyMeasurement
                 }
             }
         }
+        // to save Health data UUID entries
+        saveCoreData()
     }
 }

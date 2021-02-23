@@ -205,7 +205,7 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             index = 1
             lastIndex = 0
             print("Start timer")
-            processTimer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(fireTimer), userInfo: nil, repeats: true)
+            processTimer = Timer.scheduledTimer(timeInterval: 0.01, target: self, selector: #selector(fireTimer), userInfo: nil, repeats: true)
         }
     }
 
@@ -213,16 +213,20 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         nextStep()
     }
 
+    var startTime: TimeInterval = 0
+
     func nextStep() {
         guard index != lastIndex else { return }
         guard let delegate = self.delegate else { return }
         guard let scale = self.scale else { return }
         guard let user = self.user else { return }
+        let now = Date().timeIntervalSince1970
 
         print("execute step #\(index) #\(lastIndex)")
         lastIndex = index
         switch(index) {
         case 1:
+            startTime = now
             scale.setNotifyValue(true, for: chars[BODY_COMPOSITION_CUSTOM1_CHAR_UUID]!)
             break
         case 2:
@@ -296,7 +300,7 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             scale.setNotifyValue(true, for: chars[WEIGHT_MEASUREMENT_CHAR_UUID]!)
             break
         default:
-            print("timer stop")
+            print("timer stop, \(now - startTime) sec")
             connected = true
             delegate.updated(state: .Connected)
             processTimer?.invalidate()

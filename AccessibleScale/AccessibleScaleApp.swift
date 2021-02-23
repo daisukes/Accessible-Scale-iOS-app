@@ -65,11 +65,9 @@ struct AccessibleScaleApp: App, ScaleDelegate {
             break
         case .WeightMeasured:
             notifyMeasurement(state: state)
-            modelData.updateCoreDataAndHealthKit(state: state)
             break
         case .CompositeMeasured:
             notifyMeasurement(state: state)
-            modelData.updateCoreDataAndHealthKit(state: state)
             break
         case .Idle:
             break
