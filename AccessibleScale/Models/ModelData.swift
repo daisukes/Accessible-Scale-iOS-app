@@ -12,6 +12,7 @@ import CoreBluetooth
 import UserNotifications
 import Combine
 import HealthKit
+import os.log
 
 
 final class ModelData: ObservableObject {
@@ -62,7 +63,7 @@ final class ModelData: ObservableObject {
     }
 
     init(viewContext: NSManagedObjectContext) {
-        print("initialize viewContext \(viewContext)")
+        os_log("initialize viewContext %@", log:.data, viewContext)
         self.viewContext = viewContext
 
         // show onboard view if there is no user
@@ -111,13 +112,13 @@ final class ModelData: ObservableObject {
     }
 
     func scaleConnected() {
-        print("Scale Connected")
+        os_log("Scale Connected", log:.connection)
         connected = true
         lastWeightNotify = 0
     }
 
     func scaleDisconnected() {
-        print("Scale Disconnected")
+        os_log("Scale Disconnected", log:.connection)
         updateCoreDataAndHealthKit()
         connected = false
         measurement = Measurement()
@@ -178,7 +179,7 @@ final class ModelData: ObservableObject {
             // Replace this implementation with code to handle the error appropriately.
             // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
             let nsError = error as NSError
-            print("Unresolved error \(nsError), \(nsError.userInfo)")
+            os_log("Unresolved error \(nsError), \(nsError.userInfo)")
         }
         return nil
     }
@@ -213,13 +214,13 @@ final class ModelData: ObservableObject {
 
     func saveCoreData() {
         do {
-            print("saving change")
+            os_log("saving change", log:.data)
             try viewContext.save()
         } catch {
             // Replace this implementation with code to handle the error appropriately.
             // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
             let nsError = error as NSError
-            print("Unresolved error \(nsError), \(nsError.userInfo)")
+            os_log("Unresolved error %@, %@", log:.error, nsError, nsError.userInfo)
         }
         lastUpdated = Date()
     }
@@ -298,7 +299,7 @@ final class ModelData: ObservableObject {
         guard let user = user else { return }
         guard let bodyMeasurement = prepareBodyMeasurement() else { return }
 
-        print("updateCoreData")
+        os_log("updateCoreData", log:.data)
 
         bodyMeasurement.user = user
         bodyMeasurement.unit = unit.rawValue
@@ -317,7 +318,7 @@ final class ModelData: ObservableObject {
         let healthStore = HKHealthStore()
         let now = Date()
 
-        print("updateHealthKit")
+        os_log("updateHealthKit", log:.data)
 
         // do not save if .CompositeMeasured comes first
         dataMapping.forEach { identifier, mapping in

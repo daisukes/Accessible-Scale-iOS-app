@@ -8,6 +8,8 @@
 import Foundation
 import CoreBluetooth
 import AVFoundation
+import os.log
+
 
 protocol ScaleDelegate {
     func updated(bluetoothState: CBManagerState)
@@ -50,7 +52,7 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
 
     var delegate: ScaleDelegate?
 
-    let RESTORE_KEY = "accessibility-scale-ble-restore-key-1"
+    let RESTORE_KEY = UUID().uuidString
     let PERIPHERAL_KEY = 5939990259
 
     var manager: CBCentralManager!
@@ -69,9 +71,10 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     var weightNotified: Date?
 
     func requestAuthorization(user: User?, andScan: Bool = false) {
-        print("requestAuthorization")
+        os_log("requestAuthorization", log:.connection)
         self.user = user
         if self.manager == nil {
+            os_log("instanciate CBCentralManager", log:.connection)
             self.manager = CBCentralManager(delegate: self, queue: nil, options: [CBCentralManagerOptionRestoreIdentifierKey: RESTORE_KEY])
         }
         if andScan && self.manager.state == .poweredOn {
@@ -80,7 +83,7 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     }
 
     func start() {
-        print("start")
+        os_log("start", log:.connection)
         if self.scale == nil {
             if self.manager.isScanning == false {
                 self.manager.scanForPeripherals(withServices: [self.WEIGHT_SCALE_SERVICE_UUID], options: nil)
@@ -93,28 +96,27 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     // MARK: CBCentralManagerDelegate
 
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
-        guard let delegate = self.delegate else { return }
-        print("didUpdatedState")
-        delegate.updated(bluetoothState: central.state)
-
+        os_log("didUpdatedState", log:.connection)
         if central.state == .poweredOn {
             start()
         }
+
+        guard let delegate = self.delegate else { return }
+        delegate.updated(bluetoothState: central.state)
     }
 
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-        guard let manager = self.manager else { return }
-        print("didDiscover")
+        os_log("didDiscover", log:.connection)
 
         peripheral.delegate = self
         scale = peripheral
 
-        manager.stopScan()
+        central.stopScan()
         connect()
     }
 
     private func connect() {
-        print("connect")
+        os_log("connect", log:.connection)
         guard let manager = self.manager else { return }
         guard let scale = self.scale else { return }
 
@@ -124,7 +126,7 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     }
 
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-        print("central didConnect")
+        os_log("central didConnect", log:.connection)
         guard let scale = self.scale else { return }
 
         index = 0
@@ -146,7 +148,7 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     }
 
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
-        print("central didDisconnect")
+        os_log("central didDisconnect", log:.connection)
         guard let delegate = self.delegate else { return }
         connected = false
         chars = [:]
@@ -157,19 +159,20 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     }
 
     func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {
-        print("central willRestore")
+        os_log("central willRestore", log:.connection)
         if let scales = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral] {
             if scales.count > 0 {
                 scales[0].delegate = self
                 self.scale = scales[0]
             }
+            start()
         }
     }
 
     // MARK: CBPeripheralDelegate
 
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
-        print("peripheral didDiscoverServices")
+        os_log("peripheral didDiscoverServices", log:.connection)
 
         guard let scale = self.scale else { return }
         guard let services = scale.services else { return }
@@ -180,7 +183,7 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     }
 
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
-        print("peripheral didDiscoverCharacteristicsFor")
+        os_log("peripheral didDiscoverCharacteristicsFor", log:.connection)
         guard let chars = service.characteristics else { return }
 
         for char in chars {
@@ -204,7 +207,7 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             connected == false{
             index = 1
             lastIndex = 0
-            print("Start timer")
+            os_log("Start timer", log:.connection)
             processTimer = Timer.scheduledTimer(timeInterval: 0.01, target: self, selector: #selector(fireTimer), userInfo: nil, repeats: true)
         }
     }
@@ -222,7 +225,7 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         guard let user = self.user else { return }
         let now = Date().timeIntervalSince1970
 
-        print("execute step #\(index) #\(lastIndex)")
+        os_log("execute step %d-%d", log:.connection, index, lastIndex)
         lastIndex = index
         switch(index) {
         case 1:
@@ -241,14 +244,14 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
 
             if delete {
                 let data = GATTUserControlPoint.deleteAllUsers().compose()
-                print(data.hexEncodedString(options: .upperCase))
+                os_log("%@", log:.data, data.hexEncodedString(options: .upperCase))
                 scale.writeValue(data, for: chars[USER_CONTROL_POINT_CHAR_UUID]!, type: .withResponse)
 
             } else {
                 if user.userid == 0 {
                     user.passcode = Int16.random(in: 0...9999)
                     let data = GATTUserControlPoint.registerNewUser(passcode: UInt16(user.passcode)).compose()
-                    print(data.hexEncodedString(options: .upperCase))
+                    os_log("%@", log:.data, data.hexEncodedString(options: .upperCase))
                     scale.writeValue(data, for: chars[USER_CONTROL_POINT_CHAR_UUID]!, type: .withResponse)
                     index += 1
                 } else {
@@ -256,7 +259,7 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
                 }
             }
         case 5:
-            print("Waiting response")
+            os_log("Waiting response", log:.connection)
             break
         case 6:
             let consent = GATTUserControlPoint.consent(userID: UInt8(user.userid), passcode: UInt16(user.passcode))
@@ -300,7 +303,7 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             scale.setNotifyValue(true, for: chars[WEIGHT_MEASUREMENT_CHAR_UUID]!)
             break
         default:
-            print("timer stop, \(now - startTime) sec")
+            os_log("timer stop, %.2f sec", log:.connection, now - startTime)
             connected = true
             delegate.updated(state: .Connected)
             processTimer?.invalidate()
@@ -315,7 +318,9 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         guard let delegate = self.delegate else { return }
         guard let user = self.user else { return }
 
-        print(characteristic.uuid, data.hexEncodedString(options: .upperCase))
+        let uuid = characteristic.uuid
+        let hex = data.hexEncodedString(options: .upperCase)
+        os_log("%@, %@", log:.data, uuid, hex)
         if characteristic.uuid == USER_CONTROL_POINT_CHAR_UUID {
             let controlPoint = GATTUserControlPoint(data: data)
             guard let response = controlPoint.response else {
@@ -324,31 +329,31 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             if response.operation == .RegisterNewUser {
                 if response.value == .Success {
                     if let param = response.parameter {
-                        print("User is registered \(param)")
+                        os_log("User is registered %d", log:.connection, param)
                         user.userid = Int16(param)
                         do {
                             try user.managedObjectContext!.save()
                         } catch {
-                            print("Error registering user")
+                            os_log("Error registering user", log:.connection)
                         }
                         delegate.updated(state: .UserRegistered)
                         index += 1
                     }
                 } else {
-                    print("Registration failed")
+                    os_log("Registration failed", log:.connection)
                 }
             } else if response.operation == .DeleteUsers {
                 if response.value == .Success {
-                    print("All users deleted")
+                    os_log("All users deleted", log:.connection)
                 } else {
-                    print("All users not deleted")
+                    os_log("All users not deleted", log:.connection)
                 }
             } else if response.operation == .Consent {
                 if response.value == .Success {
-                    print("User consent success")
+                    os_log("User consent success", log:.connection)
                     index += 1
                 } else {
-                    print("User consent not success")
+                    os_log("User consent not success", log:.connection)
                     user.userid = 0
                     do {
                         try user.managedObjectContext?.save()
@@ -382,16 +387,16 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
                 delegate.updated(state: .CompositeMeasured)
                 bodyCompositionMeasurementBuffer = nil
             }
-            print("composition "+characteristic.value!.hexEncodedString(options: [.upperCase]))
+            os_log("composition %@", log:.data, characteristic.value!.hexEncodedString(options: [.upperCase]))
         } else if characteristic.uuid == BODY_COMPOSITION_CUSTOM1_CHAR_UUID {
             index += 1
         } else {
-            print(characteristic.value!.hexEncodedString(options: [.upperCase]))
+            os_log("%@", log:.data, characteristic.value!.hexEncodedString(options: [.upperCase]))
         }
     }
 
     func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
-        print("didUpdateNotificationStateFor")
+        os_log("didUpdateNotificationStateFor", log:.connection)
         index+=1
     }
 
@@ -400,7 +405,7 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
 
         if let last = weightNotified {
             if (Date().timeIntervalSince(last) < 10) {
-                print("Too many notification")
+                os_log("Too many notification", log:.data)
                 return
             }
         }

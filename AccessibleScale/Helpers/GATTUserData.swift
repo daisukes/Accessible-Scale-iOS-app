@@ -6,7 +6,7 @@
 //
 
 import Foundation
-
+import os.log
 
 class GATTUserData {
 
@@ -121,7 +121,7 @@ class GATTUserControlPoint {
             if let operation = Operation(rawValue: opCode) {
                 self.operation = operation
             } else {
-                print(String(format: "Unknown response operation code %x", opCode))
+                os_log("Unknown response operation code %x", log: .gatt, opCode)
                 self.operation = .Unknown
             }
             let valCode = GATTUtil.uint8(data, &index)

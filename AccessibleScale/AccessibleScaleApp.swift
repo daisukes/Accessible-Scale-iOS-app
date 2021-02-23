@@ -8,6 +8,7 @@
 import SwiftUI
 import CoreBluetooth
 import HealthKit
+import os.log
 
 @main
 struct AccessibleScaleApp: App, ScaleDelegate {
@@ -100,7 +101,7 @@ struct AccessibleScaleApp: App, ScaleDelegate {
 
             UNUserNotificationCenter.current().add(request) { (error: Error?) in
                 if let theError = error {
-                    print(theError.localizedDescription)
+                    os_log("%@", log: .connection, theError.localizedDescription)
                 }
             }
         }
@@ -121,7 +122,7 @@ struct AccessibleScaleApp: App, ScaleDelegate {
 
             UNUserNotificationCenter.current().add(request) { (error: Error?) in
                 if let theError = error {
-                    print(theError.localizedDescription)
+                    os_log("%@", log:.error, theError.localizedDescription)
                 }
             }
         }

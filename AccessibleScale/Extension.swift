@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import CoreBluetooth
+import os.log
 
 extension Data {
     struct HexEncodingOptions: OptionSet {
@@ -47,4 +48,13 @@ func dataWithHexString(hex: String, checksum: Bool = true) -> Data {
     }
     return data
 }
-	
+
+
+extension OSLog {
+    private static var subsystem = Bundle.main.bundleIdentifier!
+
+    static let connection = OSLog(subsystem: subsystem, category: "Connection")
+    static let data = OSLog(subsystem: subsystem, category: "Data")
+    static let gatt = OSLog(subsystem: subsystem, category: "GATT")
+    static let error = OSLog(subsystem: subsystem, category: "error")
+}
