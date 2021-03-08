@@ -8,6 +8,11 @@
 import Foundation
 import HealthKit
 
+enum DisplayMode: String {
+    case normal = "Normal"
+    case difference = "Difference"
+}
+
 enum ScaleUnit: String {
     case Kilogram = "kilo grams"
     case Pound = "pounds"
@@ -63,6 +68,10 @@ enum MeasurementTypeIdentifier: String {
     case softLeanMass = "softLeanMass"
     case bodyWaterMass = "bodyWaterMass"
     case impedance = "impedance"
+    case boneMass = "boneMass"
+    case subcutaneousFat = "subcutaneousFat"
+    case protein = "protein"
+    case metabolicAge = "metabolicAge"
 }
 
 struct Measurement {
@@ -77,6 +86,11 @@ struct Measurement {
     var softLeanMass: Double?
     var bodyWaterMass: Double?
     var impedance: Double?
+
+    var boneMass: Double?
+    var subcutaneousFat: Double?
+    var protein: Double?
+    var metabolicAge: Int?
 }
 
 extension Measurement {
@@ -94,6 +108,9 @@ extension Measurement {
     }
     func bodyWaterMass(inUnit: ScaleUnit) -> Double {
         return value(bodyWaterMass ?? 0, inUnit: inUnit)
+    }
+    func boneMass(inUnit: ScaleUnit) -> Double {
+        return value(boneMass ?? 0, inUnit: inUnit)
     }
 
     func value(_ value: Double, inUnit: ScaleUnit) -> Double {

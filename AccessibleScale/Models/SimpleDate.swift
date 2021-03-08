@@ -44,7 +44,8 @@ class SimpleDate: DateFormatter {
 class SimpleDateTime: DateFormatter {
     override init() {
         super.init()
-        self.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        self.dateStyle = .medium
+        self.timeStyle = .short
     }
 
     required init?(coder: NSCoder) {

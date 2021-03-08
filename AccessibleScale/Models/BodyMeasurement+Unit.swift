@@ -25,6 +25,9 @@ extension BodyMeasurement{
     func body_water_mass(inUnit: ScaleUnit) -> Double {
         return value(body_water_mass, inUnit: inUnit)
     }
+    func bone_mass(inUnit: ScaleUnit) -> Double {
+        return value(bone_mass, inUnit: inUnit)
+    }
 
     func value(_ value: Double, inUnit: ScaleUnit) -> Double {
         if let raw_unit = unit {

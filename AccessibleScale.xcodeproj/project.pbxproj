@@ -15,7 +15,7 @@
 		302352BB25E44D740002A683 /* ModelDataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 302352BA25E44D740002A683 /* ModelDataTypes.swift */; };
 		304C55E025DC695A00C765D8 /* AccessibleScale.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 304C55DE25DC695A00C765D8 /* AccessibleScale.xcdatamodeld */; };
 		304C562425DC776800C765D8 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304C562325DC776800C765D8 /* Persistence.swift */; };
-		304C563925DCC3E800C765D8 /* UserDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304C563825DCC3E800C765D8 /* UserDetail.swift */; };
+		304C563925DCC3E800C765D8 /* SettingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304C563825DCC3E800C765D8 /* SettingView.swift */; };
 		304C563E25DCD8D600C765D8 /* BodyMeasurementRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304C563D25DCD8D600C765D8 /* BodyMeasurementRow.swift */; };
 		304C564325DCE5DB00C765D8 /* DataHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304C564225DCE5DB00C765D8 /* DataHelper.swift */; };
 		304C564825DCF09300C765D8 /* MeasurementDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304C564725DCF09300C765D8 /* MeasurementDetail.swift */; };
@@ -68,7 +68,7 @@
 		302352BA25E44D740002A683 /* ModelDataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDataTypes.swift; sourceTree = "<group>"; };
 		304C55DF25DC695A00C765D8 /* Scale.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Scale.xcdatamodel; sourceTree = "<group>"; };
 		304C562325DC776800C765D8 /* Persistence.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
-		304C563825DCC3E800C765D8 /* UserDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDetail.swift; sourceTree = "<group>"; };
+		304C563825DCC3E800C765D8 /* SettingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingView.swift; sourceTree = "<group>"; };
 		304C563D25DCD8D600C765D8 /* BodyMeasurementRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyMeasurementRow.swift; sourceTree = "<group>"; };
 		304C564225DCE5DB00C765D8 /* DataHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataHelper.swift; sourceTree = "<group>"; };
 		304C564725DCF09300C765D8 /* MeasurementDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementDetail.swift; sourceTree = "<group>"; };
@@ -150,7 +150,7 @@
 			children = (
 				304C568F25DDB0FC00C765D8 /* RootView.swift */,
 				7EDFB96125D990A8008179BE /* ContentView.swift */,
-				304C563825DCC3E800C765D8 /* UserDetail.swift */,
+				304C563825DCC3E800C765D8 /* SettingView.swift */,
 				304C563D25DCD8D600C765D8 /* BodyMeasurementRow.swift */,
 				304C564725DCF09300C765D8 /* MeasurementDetail.swift */,
 				304C565525DD63EF00C765D8 /* OnboardView1.swift */,
@@ -390,7 +390,7 @@
 				7EDFB9BA25DA128A008179BE /* ModelData.swift in Sources */,
 				3023529925E291140002A683 /* OnboardView7.swift in Sources */,
 				304C564325DCE5DB00C765D8 /* DataHelper.swift in Sources */,
-				304C563925DCC3E800C765D8 /* UserDetail.swift in Sources */,
+				304C563925DCC3E800C765D8 /* SettingView.swift in Sources */,
 				302352B125E44C850002A683 /* BodyMeasurement+Unit.swift in Sources */,
 				304C55E025DC695A00C765D8 /* AccessibleScale.xcdatamodeld in Sources */,
 				7EDFB9CD25DA1B77008179BE /* Extension.swift in Sources */,

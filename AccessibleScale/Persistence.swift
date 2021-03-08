@@ -20,6 +20,8 @@ struct PersistenceController {
         user.date_of_birth = SimpleDate.date19700101
         user.height = 165
         user.gender = Gender.Female.rawValue
+        user.display_difference = true
+        user.display_measurement = true
 
         for i in 0..<20 {
             let newItem = BodyMeasurement(context: viewContext)

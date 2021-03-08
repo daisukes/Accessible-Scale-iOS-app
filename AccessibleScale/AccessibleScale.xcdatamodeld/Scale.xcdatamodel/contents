@@ -4,12 +4,16 @@
         <attribute name="basal_metabolism" optional="YES" attributeType="Integer 32" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="body_mass_index" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="body_water_mass" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="bone_mass" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="fat_free_mass" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="fat_percentage" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="impedance" optional="YES" attributeType="Integer 32" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="metabolic_age" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="muscle_mass" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="muscle_percentage" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="protein" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="soft_lean_mass" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="subcutaneous_fat" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="timestamp" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="unit" attributeType="String"/>
         <attribute name="weight" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
@@ -22,6 +26,9 @@
     </entity>
     <entity name="User" representedClassName="User" syncable="YES" codeGenerationType="class">
         <attribute name="date_of_birth" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="display_difference" optional="YES" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
+        <attribute name="display_measurement" optional="YES" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
+        <attribute name="display_metabolic_age_difference" optional="YES" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
         <attribute name="gender" optional="YES" attributeType="String"/>
         <attribute name="height" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="passcode" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
@@ -31,8 +38,8 @@
         <relationship name="measurements" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="BodyMeasurement" inverseName="user" inverseEntity="BodyMeasurement"/>
     </entity>
     <elements>
-        <element name="BodyMeasurement" positionX="-575.94921875" positionY="-478.625" width="128" height="239"/>
-        <element name="User" positionX="-591.05859375" positionY="-23.54296875" width="128" height="149"/>
+        <element name="BodyMeasurement" positionX="-575.94921875" positionY="-478.625" width="128" height="299"/>
         <element name="StoredEntry" positionX="-576" positionY="-306" width="128" height="59"/>
+        <element name="User" positionX="-591.05859375" positionY="-23.54296875" width="128" height="194"/>
     </elements>
 </model>

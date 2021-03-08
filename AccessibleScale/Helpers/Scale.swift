@@ -383,7 +383,7 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         } else if characteristic.uuid == BODY_COMPOSITION_MEASUREMENT_CHAR_UUID {
             if bodyCompositionMeasurementBuffer == nil {
                 let flag = GATTUtil.uint16(data[0], data[1])
-                if GATTUtil.flag(flag, 13) {
+                if GATTUtil.flag(flag, 13) { // multipacket flag
                     bodyCompositionMeasurementBuffer = data
                 } else {
                     delegate.updated(bodyComposition:GATTBodyCompositionMeasurement(data: data))

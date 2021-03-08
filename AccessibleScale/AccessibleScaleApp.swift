@@ -14,9 +14,11 @@ import os.log
 struct AccessibleScaleApp: App, ScaleDelegate {
     @Environment(\.scenePhase) var scenePhase
 
+    static let debug: Bool = false
     let scale = Scale.shared
     var center = UNUserNotificationCenter.current()
-    var modelData: ModelData = ModelData()
+    var modelData: ModelData = debug ? ModelData(viewContext:  PersistenceController.preview.container.viewContext) : ModelData()
+    static var backgroundTaskID: UIBackgroundTaskIdentifier?
 
     var body: some Scene {
         WindowGroup {
@@ -31,6 +33,30 @@ struct AccessibleScaleApp: App, ScaleDelegate {
             case .active:
                 scale.delegate = self
                 self.initNotification()
+                if AccessibleScaleApp.debug {
+                    DispatchQueue.global().async {
+                         // Request the task assertion and save the ID.
+                        AccessibleScaleApp.backgroundTaskID = UIApplication.shared.beginBackgroundTask (withName: "Finish Network Tasks") {
+                            UIApplication.shared.endBackgroundTask(AccessibleScaleApp.backgroundTaskID!)
+                            AccessibleScaleApp.backgroundTaskID = UIBackgroundTaskIdentifier.invalid
+                         }
+
+                        DispatchQueue.main.async {
+                        Timer.scheduledTimer(withTimeInterval: 3, repeats: false) { timer in
+                            modelData.displayMeasurement = true
+                            modelData.displayDifference = false
+                            modelData.measurement = Measurement(measurementUnit: .Kilogram, weight: 65, fatPercentage: 25, metabolicAge: 40)
+                            self.notifyMeasurement(state: .WeightMeasured)
+                        }
+                        Timer.scheduledTimer(withTimeInterval: 13, repeats: false) { timer in
+                            modelData.displayMeasurement = true
+                            modelData.displayDifference = true
+                            modelData.measurement = Measurement(measurementUnit: .Kilogram, weight: 65, fatPercentage: 25, metabolicAge: 40)
+                            self.notifyMeasurement(state: .WeightMeasured)
+                        }
+                        }
+                    }
+                }
                 break
             @unknown default:
                 break
@@ -134,13 +160,13 @@ struct AccessibleScaleApp: App, ScaleDelegate {
         if state == .WeightMeasured && modelData.measurement.weight ?? 0 > 0 {
             if modelData.measurement.fatPercentage == nil {
                 // measured before fat
-                let message = modelData.localizedWeightString()
+                let message = modelData.notificationWeightString()
                 let sound = UNNotificationSound.default
                 notify(message, sound: sound)
                 modelData.lastWeightNotify = Date().timeIntervalSince1970
             } else {
                 // measured after fat
-                let message = modelData.localizedWeightFatString()
+                let message = modelData.notificationWeightFatString()
                 let sound = UNNotificationSound.default
                 notify(message, sound: sound)
                 modelData.lastWeightNotify = Date().timeIntervalSince1970
@@ -152,7 +178,7 @@ struct AccessibleScaleApp: App, ScaleDelegate {
                 // Non Error
                 if modelData.lastWeightNotify > 0 {
                     // measured after weight
-                    let message = modelData.localizedFatString()
+                    let message = modelData.notificationFatString()
                     let sound = UNNotificationSound.default
                     notify(message, sound: sound)
                 } else {
@@ -161,7 +187,7 @@ struct AccessibleScaleApp: App, ScaleDelegate {
                 }
             } else {
                 // Error
-                let message = "Fat percentage measurement error"
+                let message = "Fat measurement error"
                 let sound = UNNotificationSound.default
                 notify(message, sound: sound)
             }

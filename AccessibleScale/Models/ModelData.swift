@@ -28,6 +28,9 @@ final class ModelData: ObservableObject {
     @Published var displayedScene: DisplayedScene = .Onboard
 
     // user preference
+    @Published var displayMeasurement: Bool = true
+    @Published var displayDifference: Bool = true
+    @Published var displayMetabolicAgeDifference: Bool = true
     @Published var unit: ScaleUnit = .Kilogram
     @Published var height: Int = 165
     @Published var date_of_birth: Date = SimpleDate.date19700101
@@ -76,6 +79,12 @@ final class ModelData: ObservableObject {
             height = Int(user.height)
             date_of_birth = user.date_of_birth!
             gender = Gender(rawValue: user.gender!)!
+            displayMeasurement = user.display_measurement
+            displayDifference = user.display_difference
+            displayMetabolicAgeDifference = user.display_metabolic_age_difference
+            if displayMeasurement == false && displayDifference == false {
+                displayMeasurement = true
+            }
             self.user = user
         }
 
@@ -90,19 +99,139 @@ final class ModelData: ObservableObject {
         measurement.weight(inUnit: unit)
     }
 
+    func weightDiffInUserUnit() -> Double {
+        guard let lastMeasurement = lastMeasurement() else { return 0 }
+        guard weightInUserUnit() > 0 else { return 0 }
+        guard abs(weightInUserUnit() - lastMeasurement.weight(inUnit: unit)) < 10 else { return 0 }
+        return weightInUserUnit()  - lastMeasurement.weight(inUnit: unit)
+    }
+
+    func fat() -> Double {
+        return measurement.fatPercentage ?? 0
+    }
+
+    func fatDiff() -> Double {
+        guard let lastMeasurement = lastMeasurement() else { return 0 }
+        guard fat() > 0 else { return 0 }
+        return fat() - lastMeasurement.fat_percentage
+    }
+
+    func lastMeasurement() -> BodyMeasurement? {
+        guard let measurements = user?.measurements?.allObjects as? [BodyMeasurement] else { return nil }
+        guard measurements.count > 0 else { return nil }
+        return measurements.sorted{ $0.timestamp! > $1.timestamp! }[0]
+    }
+
+    func metabolicAgeDiff() -> Int {
+        let calendar = Calendar(identifier: .gregorian)
+        let ageComponents = calendar.dateComponents([Calendar.Component.year],
+                                                    from: user?.date_of_birth ?? SimpleDate.date19700101,
+                                                    to: Date())
+        if let age = ageComponents.year {
+            if let mAge = measurement.metabolicAge {
+                return mAge - age
+            }
+        }
+        return 0
+    }
+
     // TODO Localize
     func localizedWeightString() -> String {
-        let weight = measurement.weight(inUnit: unit)
-        return String(format: "%.1f %@", weight, unit.rawValue)
+        if measurement.weight != nil {
+            return String(format: "%.1f %@", weightInUserUnit(), unit.rawValue)
+        } else {
+            return String(format: "No weight measurement")
+        }
+    }
+
+    func localizedWeightDiffString() -> String {
+        let diff = weightDiffInUserUnit()
+        if diff > 0{
+            return String(format: "You gain %.1f %@", abs(diff), unit.rawValue)
+        } else if diff < 0 {
+            return String(format: "You lose %.1f %@", abs(diff), unit.rawValue)
+        } else {
+            if measurement.weight != nil {
+                return String(format: "No difference in Weight")
+            } else {
+                return String(format: "No weight measurement")
+            }
+        }
+    }
+
+    func notificationWeightString() -> String {
+        var str = ""
+        if displayMeasurement {
+            str += localizedWeightString() + ". "
+        }
+        if displayDifference {
+            str += localizedWeightDiffString() + ". "
+        }
+        return str
     }
 
     func localizedFatString() -> String {
-        let fatPercentage = measurement.fatPercentage ?? 0
-        return String(format: "%.1f %%", fatPercentage)
+        if measurement.weight != nil {
+            return String(format: "Fat %.1f %%", fat())
+        } else {
+            return String(format: "No fat measurement")
+        }
+    }
+
+    func localizedFatDiffString() -> String {
+        let diff = fatDiff()
+        if diff > 0 {
+            return String(format: "Fat gains %.1f %%", abs(diff))
+        } else if diff < 0 {
+            return String(format: "Fat loses %.1f %%", abs(diff))
+        } else {
+            if measurement.fatPercentage != nil {
+                return String(format: "No difference in Fat")
+            } else {
+                return String(format: "No fat measurement")
+            }
+        }
+    }
+
+    func localizedMetabolicAgeDiffString() -> String {
+        let diff = metabolicAgeDiff()
+        if diff < 0 {
+            return String(format: "You looks %d years younger than your age", abs(diff))
+        } else if diff > 0 {
+            return String(format: "You looks %d years older than your age", abs(diff))
+        } else {
+            if measurement.metabolicAge != nil {
+                return String(format: "You looks as your age")
+            } else {
+                return String(format: "No age measurement")
+            }
+        }
+    }
+
+    func notificationFatString() -> String {
+        var str = ""
+        if displayMeasurement {
+            str += localizedFatString() + ". "
+        }
+        if displayDifference {
+            str += localizedFatDiffString() + ". "
+        }
+        if displayMetabolicAgeDifference {
+            str += localizedMetabolicAgeDiffString() + ". "
+        }
+        return str
     }
 
     func localizedWeightFatString() -> String {
-        return String(format: "%@, %@", localizedWeightString(), localizedFatString())
+        return String(format: "%@ %@", localizedWeightString(), localizedFatString())
+    }
+
+    func localizedWeightFatDiffString() -> String {
+        return String(format: "%@ %@", localizedWeightDiffString(), localizedFatDiffString())
+    }
+
+    func notificationWeightFatString() -> String {
+        return String(format: "%@ %@", notificationWeightString(), notificationFatString())
     }
 
     func prepareBodyMeasurement() -> BodyMeasurement? {
@@ -139,6 +268,11 @@ final class ModelData: ObservableObject {
         measurement.muscleMass = bodyComposition.muscleMass
         measurement.musclePercentage = bodyComposition.musclePercentage
         measurement.softLeanMass = bodyComposition.softLeanMass
+
+        measurement.boneMass = bodyComposition.boneMass
+        measurement.subcutaneousFat = bodyComposition.subcutaneousFat
+        measurement.protein = bodyComposition.protein
+        measurement.metabolicAge = bodyComposition.metabolicAge
     }
 
 
@@ -202,6 +336,18 @@ final class ModelData: ObservableObject {
         }
         if user.gender != gender.rawValue {
             user.gender = gender.rawValue
+            changed = true
+        }
+        if user.display_measurement != displayMeasurement {
+            user.display_measurement = displayMeasurement
+            changed = true
+        }
+        if user.display_difference != displayDifference {
+            user.display_difference = displayDifference
+            changed = true
+        }
+        if user.display_metabolic_age_difference != displayMetabolicAgeDifference {
+            user.display_metabolic_age_difference = displayMetabolicAgeDifference
             changed = true
         }
         if changed {
@@ -314,6 +460,11 @@ final class ModelData: ObservableObject {
         bodyMeasurement.muscle_mass = measurement.muscleMass(inUnit: unit)
         bodyMeasurement.muscle_percentage = measurement.musclePercentage ?? 0
         bodyMeasurement.soft_lean_mass = measurement.softLeanMass(inUnit: unit)
+
+        bodyMeasurement.bone_mass = measurement.boneMass(inUnit: unit)
+        bodyMeasurement.subcutaneous_fat = measurement.subcutaneousFat ?? 0
+        bodyMeasurement.protein = measurement.protein ?? 0
+        bodyMeasurement.metabolic_age = Int32(measurement.metabolicAge ?? 0)
 
         let healthStore = HKHealthStore()
         let now = Date()

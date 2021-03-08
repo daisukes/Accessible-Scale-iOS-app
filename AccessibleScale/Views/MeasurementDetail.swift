@@ -29,6 +29,7 @@ struct MeasurementDetail: View {
                 .padding()
 
                 optionalPart
+                optionalPart2
             }
         }
         .padding()
@@ -115,6 +116,48 @@ struct MeasurementDetail: View {
                     Text("Impedance")
                     Spacer()
                     Text(String(format:"%d Ohm", measurement.impedance ))
+                }
+                .padding()
+            }
+        }
+    }
+
+    var optionalPart2: some View {
+        let unit = modelData.unit
+
+        return VStack {
+            if measurement.bone_mass > 0 {
+                HStack {
+                    Text("Bone Mass")
+                    Spacer()
+                    Text(String(format:"%.2f %@", measurement.bone_mass(inUnit: unit), unit.label() ))
+                }
+                .padding()
+            }
+
+            if measurement.subcutaneous_fat > 0 {
+                HStack {
+                    Text("Subcutaneous Fat")
+                    Spacer()
+                    Text(String(format:"%.2f %%", measurement.subcutaneous_fat ))
+                }
+                .padding()
+            }
+
+            if measurement.protein > 0 {
+                HStack {
+                    Text("Protein")
+                    Spacer()
+                    Text(String(format:"%.2f %%", measurement.protein ))
+                }
+                .padding()
+            }
+
+            if measurement.metabolic_age > 0 {
+                HStack {
+                    Text("Metabolic Age")
+                    Spacer()
+                    Text(String(format:"%d", measurement.metabolic_age ))
                 }
                 .padding()
             }
