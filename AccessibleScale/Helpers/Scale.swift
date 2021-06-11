@@ -69,6 +69,7 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     var user: User?
     var connected: Bool = false
     var weightNotified: Date?
+    var deleteUsersAllowed: Bool = true
 
     func requestAuthorization(user: User?, andScan: Bool = false) {
         os_log("requestAuthorization", log:.connection)
@@ -123,6 +124,11 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         manager.connect(scale, options: [
             CBConnectPeripheralOptionNotifyOnConnectionKey : NSNumber(value: PERIPHERAL_KEY),
         ])
+    }
+
+    func allowDeletingAllUsers() {
+        self.delegate?.updated(state: .NotConnected)
+        deleteUsersAllowed = true
     }
 
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
@@ -242,24 +248,15 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             scale.setNotifyValue(true, for: chars[USER_CONTROL_POINT_CHAR_UUID]!)
             break
         case 4:
-            let delete = false
-
-            if delete {
-                let data = GATTUserControlPoint.deleteAllUsers().compose()
+            if user.userid == 0 {
+                os_log("#4 register an user", log:.connection)
+                user.passcode = Int16.random(in: 0...9999)
+                let data = GATTUserControlPoint.registerNewUser(passcode: UInt16(user.passcode)).compose()
                 os_log("%@", log:.data, data.hexEncodedString(options: .upperCase))
                 scale.writeValue(data, for: chars[USER_CONTROL_POINT_CHAR_UUID]!, type: .withResponse)
-
             } else {
-                if user.userid == 0 {
-                    os_log("#4 register an user", log:.connection)
-                    user.passcode = Int16.random(in: 0...9999)
-                    let data = GATTUserControlPoint.registerNewUser(passcode: UInt16(user.passcode)).compose()
-                    os_log("%@", log:.data, data.hexEncodedString(options: .upperCase))
-                    scale.writeValue(data, for: chars[USER_CONTROL_POINT_CHAR_UUID]!, type: .withResponse)
-                } else {
-                    os_log("#4 user is already registered", log:.connection)
-                    index += 1
-                }
+                os_log("#4 user is already registered", log:.connection)
+                index += 1
             }
         case 5:
             os_log("#5 user control point consent write", log:.connection)
@@ -349,10 +346,27 @@ class Scale: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
                     }
                 } else {
                     os_log("Registration failed", log:.connection)
+
+                    if self.deleteUsersAllowed {
+                        guard let scale = self.scale else { return }
+                        let data = GATTUserControlPoint.deleteAllUsers().compose()
+                        os_log("%@", log:.data, data.hexEncodedString(options: .upperCase))
+                        scale.writeValue(data, for: chars[USER_CONTROL_POINT_CHAR_UUID]!, type: .withResponse)
+                        self.deleteUsersAllowed = false
+                    }
                 }
             } else if response.operation == .DeleteUsers {
                 if response.value == .Success {
                     os_log("All users deleted", log:.connection)
+                    user.userid = 0
+                    user.passcode = 0
+                    user.written = false
+                    do {
+                        try user.managedObjectContext!.save()
+                    } catch {
+                    }
+                    // retry user registration trick
+                    lastIndex = 0
                 } else {
                     os_log("All users not deleted", log:.connection)
                 }

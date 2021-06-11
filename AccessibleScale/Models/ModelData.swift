@@ -41,6 +41,14 @@ final class ModelData: ObservableObject {
     @Published var measurement = Measurement()
     @Published var lastUpdated: Date = Date()
 
+    // debug
+    @Published var previewing: Bool = false
+
+    func preview() -> ModelData {
+        self.previewing = true
+        return self
+    }
+
     // Core Data
     var viewContext: NSManagedObjectContext!
     var bodyMeasurementData: BodyMeasurement?
